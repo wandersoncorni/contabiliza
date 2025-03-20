@@ -1,0 +1,33 @@
+name: Laravel Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar o PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, pdo_sqlite
+          tools: composer:v2
+
+      - name: Instalar dependências do Laravel
+        run: composer install --prefer-dist --no-progress
+
+      - name: Cria a base de dados sqlite
+        run: touch ./database/database.sqlite
+          
+      - name: Rodar migrações
+        run: php artisan migrate:reset --env=testing && php artisan migrate --env=testing --seed && php artisan test --env=testing --testsuite=feature
