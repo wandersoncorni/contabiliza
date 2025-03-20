@@ -148,7 +148,8 @@ class RbacSeeder extends Seeder
             ['role_id' => 3, 'action_id' => 1, 'asset_id' => 3],
             ['role_id' => 3, 'action_id' => 3, 'asset_id' => 3],
             ['role_id' => 3, 'action_id' => 4, 'asset_id' => 3],
-            ['role_id' => 3, 'action_id' => 4, 'asset_id' => 4],
+            ['role_id' => 3, 'action_id' => 4, 'asset_id' => 4],            
+            ['role_id' => 2, 'action_id' => 6, 'asset_id' => 1],
 
             ['role_id' => 4, 'action_id' => 1, 'asset_id' => 4],
             ['role_id' => 4, 'action_id' => 3, 'asset_id' => 4],
