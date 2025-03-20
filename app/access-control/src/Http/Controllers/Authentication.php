@@ -29,18 +29,23 @@ class Authentication
         //Executa a validacao
         if (!$validator->fails()) {
             // Recupera o usuário pelo email
-            $user = User::select('id', 'password', 'active')->where('email', $request->email)->first();
+            $user = User::select('id', 'password', 'active','email_verified_at')->where('email', $request->email)->first();
             if ($user) {
+                
+                if (!$user->hasVerifiedEmail()) {
+                    return response()->json(['error' => 'Verifique seu e-mail antes de fazer login.'], 403);
+                }
+
                 // Verifica se o usuário esta ativo
                 if ((int)$user->active == 0) {
-                    return response()->json(['message' => 'Conta inativa! Verifique seu email ou informe ao administrador.'], 401);
+                    return response()->json(['error' => 'Conta inativa! Verifique seu email ou informe ao administrador.'], 403);
                 }
 
                 // Verifica se a senha é MD5 e troca para argon
                 if (strlen($user->password) == 32) {
                     // Senha armazenada é MD5, faz a validação com MD5
                     if (md5($request->password) !== $user->password) {
-                        return response()->json(['message' => 'Credenciais inválidas.'], 401);
+                        return response()->json(['error' => 'Credenciais inválidas.'], 401);
                     }
 
                     // Se a senha estiver correta, converte para Argon2id
@@ -55,16 +60,22 @@ class Authentication
                 }
             }
         }
-        return response()->json(['message' => 'Credenciais inválidas!'], 401);
+        return response()->json(['error' => 'Credenciais inválidas!'], 401);
     }
     /**
      * Metodo para fazer o logout do usuario
      * @return void
      */
-    public function logout(): void
-    {
+    public function logout()
+    {   
+        if (!Auth::check()) {dd('ok');
+            return redirect()->route('login');
+        }
+
         Auth::user()->tokens->each(function ($token) {
             $token->delete();
         });
+
+        return redirect()->route('login.view');
     }
 }

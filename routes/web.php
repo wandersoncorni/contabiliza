@@ -9,19 +9,18 @@ use Illuminate\Support\Facades\Route;
 /*************************************************************
  * Autentiicacao e autorizacao
  *************************************************************/
-Route::controller(Authentication::class)->group(function () {
-    Route::get('login', function () {
-        return view('login');
-    })->name('login');
-});
+
+Route::get('login', function () {
+    return view('access-control::login');
+})->name('login.view');
 
 /*************************************************************
  * Usuario
  *************************************************************/
 Route::get('register', function () {
-    return view('register');
-})->name('register');
+    return view('access-control::register');
+})->name('register.view');
 
 Route::get('forgot-password',  function () {
-    return view('forgot.pwd');
+    return view('forgot.pwd.view');
 });

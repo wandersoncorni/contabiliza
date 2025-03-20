@@ -1,5 +1,5 @@
 <?php
-$scriptText = file_get_contents(resource_path() . "/js/" . "$file.js");
+$scriptText = file_get_contents($path);
 ?>
 <script type='text/javascript'>
     @php print $scriptText @endphp

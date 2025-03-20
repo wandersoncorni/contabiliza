@@ -117,3 +117,19 @@ composer require laminas/laminas-permissions-rbac
     - Consultor: qualquer pessoa do franquiado, contador ou auxiliar, que auxilia o cliente na aplicação. 
     - Cliente: pessoa que contrata o escritório/proffisional de contabilidade
     - Colaborador: pessoa cadastrada pelo cliente para auxiliar na sua gestão. 
+
+## Helpers
+### module_path(<nome-modulo>,<complemento>)
+- Retorna o path para o módulo. Se informado o complemento
+
+## Módulos implamentados
+1) Autenticação:
+    - Login
+    - Cadastro de usuário (cliente)
+    - Recuperação de senha
+2) Autorização (RBAC)
+3) Cadastro de usuário (edição de conta)
+4) Cadastro de empresa (cliente)
+
+## Banco de dados
+- Os registros documentais da criação das tabelas estão no arquivo de migração

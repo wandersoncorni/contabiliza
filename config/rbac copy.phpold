@@ -1,0 +1,54 @@
+<?php
+/**
+ * Hierarquia
+ * root
+ * |- admin
+ *    |- manager
+ *       |- consultant
+ * |- user
+ */
+return [
+    'roles' => [
+        'root' => [
+            'permissions' => []
+        ],
+        'admin' => [
+            'permissions' => [
+                'delete.user',
+                'create.user', 
+                'update.user'
+            ],
+            'parents' => ['root']
+        ],
+        'manager' => [
+            'permissions' => [
+                'delete.client'
+            ],
+            'parents' => ['admin']
+        ],
+        'consultant' => [
+            'permissions' => [
+                'create.client', 
+                'update.client'
+            ],
+            'parents' => ['manager']
+        ],
+        'client' => [
+            'permissions' => [
+            ],
+            'parents' => ['consultant']
+        ],
+        'agent' => [
+            'permissions' => ['read.reports'],
+            'parents' => ['client']
+        ],
+        'client_only' => [
+            'permissions' => [
+                'create.agent', 
+                'update.agent',
+                'delete.agent'
+            ],
+            'parents' => ['admin']
+        ]
+    ]
+];

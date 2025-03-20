@@ -2,16 +2,19 @@
 
 namespace App\AccessControl\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail  as MustVerifyEmailContract;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\AccessControl\Services\RBACService;
+use App\Application\Models\People;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, MustVerifyEmail;
 
     /**
      * A tabela associada ao modelo.
@@ -27,7 +30,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'email',
-        'password'
+        'password',
     ];
 
     /**
@@ -37,7 +40,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
@@ -63,11 +65,17 @@ class User extends Authenticatable
     public function hasPermission(string $permission): bool
     {
         $rbacService = app(RBACService::class);
-        foreach($this->roles as $role){
-            if($rbacService->hasPermission($this->role, $permission)){
+        $userRoles = !is_array($this->people->roles) ? json_decode($this->people->roles) : $this->people->roles ;
+        foreach ($userRoles as $role) {
+            if ($rbacService->hasPermission($role, $permission)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public function people(): HasOne
+    {
+        return $this->hasOne(People::class);
     }
 }

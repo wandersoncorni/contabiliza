@@ -45,3 +45,5 @@ function something()
 {
     // ..
 }
+
+pest()->extend(Tests\TestCase::class)->in('../app/*/tests/*');
