@@ -24,19 +24,9 @@ jobs:
           tools: composer:v2
 
       - name: Instalar dependências do Laravel
-        run: composer install --prefer-dist --no-progress --no-suggest
-
-      - name: Criar arquivo `.env`
-        run: |
-          cp .env.example .env
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=/tmp/database.sqlite" >> .env
-
-      - name: Criar banco de dados SQLite
-        run: touch /tmp/database.sqlite
-
+        run: composer install --prefer-dist --no-progress
+          
       - name: Rodar migrações
-        run: php artisan migrate --force
-
-      - name: Executar testes
-        run: php artisan test
+        run: php artisan migrate:reset --env=testing \
+        && php artisan migrate --env=testing --seed \
+        && php artisan test --env=testing
