@@ -12,7 +12,7 @@
             <directory>tests/Feature</directory>
         </testsuite>
         <testsuite name="AccessControl">
-            <directory suffix="Test.php">./app/access-control/tests</directory>
+            <directory suffix="Test.php">app/access-control/tests</directory>
         </testsuite>
     </testsuites>
     <source>
