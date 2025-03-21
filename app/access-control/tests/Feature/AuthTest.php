@@ -9,15 +9,15 @@
 use App\AccessControl\Models\User;
 
 it('nao executa o login um usuario com email nao verificado', function () {
-    $user = User::first();
-    $user->email_verified_at = null;
-    $user->active = 1;
+    $user = User::whereHas('people', function ($query) {
+        $query->where('roles', 'LIKE', '%client%');
+    })->get()->first();
 
     $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
         'password' => 'Password@123',
     ]);
-
+    
     $response->assertStatus(403)
         ->assertJson(['error' => 'Verifique seu e-mail antes de fazer login.']);
 });

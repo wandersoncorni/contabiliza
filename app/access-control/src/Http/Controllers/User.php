@@ -243,7 +243,7 @@ class User
     public function changeState(Request $req): JsonResponse
     {
         // Somente o perfil administrador poderah alterar o estado e o perfil
-        if (Auth::user()->hasPermition('execute.change_state')) {
+        if (Auth::user()->hasPermission('execute.change_state')) {
             return response()->json(['message' => 'Usuário não autorizado'], 401);
         }
         $profiles = [];
@@ -256,7 +256,7 @@ class User
         $validated = $req->validate([
             'id' => 'required|numeric|gt:0',
             'active' => 'nullable|numeric|in:0,1',
-            'profile_id' => 'nullable|numeric|in:' . $pids,
+            'profile_id' => 'nullable|numeric|in:' . implode(',', $pids),
         ]);
 
         if (isset($validated['active']) || isset($validated['profile_id'])) {
@@ -265,14 +265,15 @@ class User
 
             // Formata a mensagem
             if (isset($validated['active'])) {
+                $user->active = $validated['active'];
                 $message = "O usuário $user->name foi " . ($validated['active'] ? '' : 'in') . "ativado!";
             } else {
+                $user->profile_id = $validated['profile_id'];
                 $message = "O perfil do usuário $user->name foi para " . $pNames[$validated['id']];
             }
             unset($validated['id']);
-
             // Executa a query
-            if ($user->update($validated)) {
+            if ($user->save()) {
                 return response()->json(['message' => $message], 200);
             };
 

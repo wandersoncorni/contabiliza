@@ -159,7 +159,9 @@ it('trocar a senha do usuario', function () {
 });
 
 it('mudar o estado de ativo/inativo e perfil', function(){
-    $admin = User::where('name', 'Admin')->first();
+    $admin = User::whereHas('people', function ($query) {
+        $query->where('roles', 'LIKE', '%admin%');
+    })->get()->first();
     
     $this->postJson('/api/v1/login', [
         'email' => $admin->email,
