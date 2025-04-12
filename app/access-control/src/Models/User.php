@@ -65,7 +65,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function hasPermission(string $permission): bool
     {
         $rbacService = app(RBACService::class);
-        $userRoles = !is_array($this->people->roles) ? json_decode($this->people->roles) : $this->people->roles ;
+        $userRoles = !is_array($this->person->roles) ? json_decode($this->person->roles) : $this->person->roles ;
         foreach ($userRoles as $role) {
             if ($rbacService->hasPermission($role, $permission)) {
                 return true;
@@ -73,8 +73,11 @@ class User extends Authenticatable implements MustVerifyEmailContract
         }
         return false;
     }
-
-    public function people(): HasOne
+    /**
+     * Relacionamento com a tabela de pessoas
+     * @return Object
+     */
+    public function person(): HasOne
     {
         return $this->hasOne(People::class);
     }

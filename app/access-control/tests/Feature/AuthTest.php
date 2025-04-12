@@ -8,8 +8,8 @@
 
 use App\AccessControl\Models\User;
 
-it('nao executa o login um usuario com email nao verificado', function () {
-    $user = User::whereHas('people', function ($query) {
+it('nao executa o login de um usuario com email nao verificado', function () {
+    $user = User::where('email_verified_at', null)->whereHas('person', function ($query) {
         $query->where('roles', 'LIKE', '%client%');
     })->get()->first();
 
@@ -43,7 +43,7 @@ it('nao executa o login um usuario desativado', function () {
  *  - O email devee ser valido
  *  - O usuario deve estar ativo
  */
-it('executa o login um usuario ativo e email verificado', function () {
+it('executa o login  de um usuario ativo e email verificado', function () {
     $user = User::first();
     $user->email_verified_at = now();
     $user->active = 1;

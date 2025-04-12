@@ -39,8 +39,13 @@ class People extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function associated(): HasMany
+    public function client(): BelongsTo
     {
-        return $this->hasMany(Associated::class, 'associated_id');
+        return $this->belongsTo(Client::class);
+    }
+
+    public function agent(): HasMany
+    {
+        return $this->hasMany(Agent::class);
     }
 }

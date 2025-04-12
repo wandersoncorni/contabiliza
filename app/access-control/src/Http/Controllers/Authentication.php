@@ -4,7 +4,6 @@ namespace App\AccessControl\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use App\AccessControl\Models\User;
@@ -13,9 +12,6 @@ class Authentication
 {
     /**
      * Metodo para fazer o login do usuario
-     * Condição: O usuario deve estar ativo
-     * Para a versao 3 do elattes foi implementada a funcionalidade para
-     * trocar o tipo do hash da senha de MD5 para argon2id
      * @param Request $request
      * @return JsonResponse
      */
@@ -26,37 +22,51 @@ class Authentication
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
+        
         //Executa a validacao
         if (!$validator->fails()) {
             // Recupera o usuário pelo email
             $user = User::select('id', 'password', 'active','email_verified_at')->where('email', $request->email)->first();
             if ($user) {
-                
-                if (!$user->hasVerifiedEmail()) {
-                    return response()->json(['error' => 'Verifique seu e-mail antes de fazer login.'], 403);
-                }
-
                 // Verifica se o usuário esta ativo
                 if ((int)$user->active == 0) {
                     return response()->json(['error' => 'Conta inativa! Verifique seu email ou informe ao administrador.'], 403);
                 }
-
-                // Verifica se a senha é MD5 e troca para argon
-                if (strlen($user->password) == 32) {
-                    // Senha armazenada é MD5, faz a validação com MD5
-                    if (md5($request->password) !== $user->password) {
-                        return response()->json(['error' => 'Credenciais inválidas.'], 401);
+                // Verifica se a senha eh valida
+                $credencials = [
+                    'email' => $request->email,
+                    'password' => $request->password,
+                    'active' => 1,
+                ];
+                if (Auth::attempt($credencials)) {
+                    // Verifica se o usuário estah verificado
+                    if (!$user->hasVerifiedEmail()) {
+                        if(!is_null(session('verify'))) {
+                            $verify = session('verify');
+                            session()->forget('verify');
+                            $host = $request->getHost();
+                            $request = Request::create("https://{$host}/api/v1/email/verify/{$user->id}/{$verify['hash']}?expires={$verify['expires']}&signature={$verify['signature']}", 'GET');
+                            
+                            $request->setUserResolver(fn () => auth()->user());
+                            $response = app()->handle($request);
+                            if($response->getStatusCode() !== 200){
+                                return response()->json(['error' => 'Link de verificação inválido!'], $response->getStatusCode());
+                            }
+                            if(!$user->fresh()->hasVerifiedEmail()){
+                                return response()->json(['error' => 'Ocorreu um erro ao tentar validar seu e-mail.'], 403);
+                            }
+                        }
+                        else{
+                            return response()->json(['error' => 'Verifique seu e-mail antes de fazer login.'], 403);
+                        }
                     }
 
-                    // Se a senha estiver correta, converte para Argon2id
-                    $user->password = Hash::make($request->password);
-                    $user->save();
-                }
-
-                if (Auth::attempt($validator->validated())) {
                     $user = Auth::user();
-                    $token = $user->createToken('app')->plainTextToken; 
-                    return response()->json(['token' => $token], 200);
+                    $token = $user->createToken('app')->plainTextToken;
+                    return response()->json([
+                        'message' => 'Você está sendo redirecionado para o painel administrativo.',
+                        'token' => $token
+                    ], 200);
                 }
             }
         }
@@ -66,16 +76,15 @@ class Authentication
      * Metodo para fazer o logout do usuario
      * @return void
      */
-    public function logout()
+    public function logout(Request $request)
     {   
-        if (!Auth::check()) {dd('ok');
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        Auth::user()->tokens->each(function ($token) {
-            $token->delete();
-        });
+        $request->user()->tokens()->delete(); // Revoga TODOS os tokens do usuário
+        auth()->guard('web')->logout();
 
-        return redirect()->route('login.view');
+        return redirect()->route('login');
     }
 }

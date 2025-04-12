@@ -32,7 +32,7 @@ return new class extends Migration
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('label');
+            $table->string('label')->unique('asset_label');
             $table->timestamps();
             $table->timestamp('deleted_at')->nullable();
         });

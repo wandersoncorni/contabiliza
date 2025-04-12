@@ -26,13 +26,13 @@ class RegisterValidationRequest extends FormRequest
     {
         return [
             'email' => [
-                'required',
+                (Auth::check() ? 'nullable' : 'required'),
                 'string',
                 'email',
                 'max:255',
             ],
             'password' => [
-                (!Auth::check() ? 'required' : 'nullable'),
+                (Auth::check() ? 'nullable' : 'required'),
                 'string',
                 'min:8', //comprimento mínimo
                 'confirmed', // campo de confirmação
@@ -42,15 +42,15 @@ class RegisterValidationRequest extends FormRequest
                 'regex:/[\W_]/',  // pelo menos um caractere especial
             ],
             'password_confirmation' => [
-                (!Auth::check() ? 'required' : 'nullable'),
+                (Auth::check() ? 'nullable' : 'required'),
                 'string',
             ],
             'name' => [
-                'required',
+                (Auth::check() ? 'nullable' : 'required'),
                 'string',
                 'max:255',
             ],
-            'roles' => [
+            'role' => [
                 'sometimes',
                 'string',
                 Rule::in(Role::select('label')
@@ -59,6 +59,7 @@ class RegisterValidationRequest extends FormRequest
                     ->pluck('label')
                     ->toArray()),
             ],
+            'client_id' => 'sometimes|integer',
         ];
     }
     /**

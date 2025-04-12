@@ -24,8 +24,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('licenciado_id')->onDelete('cascade')->nullable();
             $table->string('name')->nullable();
-            $table->string('phone', 11)->nullable();
-            $table->string('roles','10');
+            $table->string('phone', 20)->nullable();
+            $table->string('roles', 20);
             $table->timestamps();
         });
     }

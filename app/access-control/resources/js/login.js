@@ -1,21 +1,43 @@
 /**
- * Script for login page
+ * Script para a pagina de login
  * @version 1.0
  */
-$(function () {
-    // Login form submit
-    $('#loginForm').submit(function (e) {
-        e.preventDefault();
-        var form = $(this);
-        var url = form.attr('action');
-        var data = form.serialize();
-        $.post(url, data, function (response) {
-            if (response.status == 'error') {
-                $('#message').html(response.message).addClass('alert alert-danger');
-            } else {
-                $('#message').html(response.message).addClass('alert alert-success');
-                window.location.href = response.redirect;
+document.querySelector('#login-form').addEventListener("submit", async (event) => {
+    event.preventDefault();
+    fetch('/api/v1/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include', // Necessário para cookies HTTP-only
+        body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            _token: document.querySelector('input[name="_token"]').value
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: data.error,
+                });
+                return;
             }
-        }, 'json');
-    });
+            window.location.href = '/';
+        })
+        .catch(error => console.error('Erro:', error));
+});
+document.querySelector("#show_password").addEventListener("change", function () {
+    const passwordField = document.querySelector("#password");
+    this.checked ? passwordField.type = "text" : passwordField.type = "password";
+});
+document.querySelector("#show_password").checked = false;
+document.querySelector("body").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Evita o envio automático padrão
+        document.querySelector("[type=submit]").click(); // Dispara o clique no botão de envio
+    }
 });

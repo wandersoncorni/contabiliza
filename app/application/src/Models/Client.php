@@ -14,10 +14,16 @@ class Client extends Model
 
     protected $fillable = [
         'name',
+        'people_id',
     ];
 
     public function people(): HasMany
     {
         return $this->hasMany(People::class);
+    }
+
+    public function agent(): HasMany
+    {
+        return $this->hasMany(Agent::class);
     }
 }

@@ -1,82 +1,155 @@
 /**
  * Scripts para o registro de usuários
  */
-$(function () {
-    $('#form-register').submit(function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        // Limpar mensagens de erro anteriores
-        $('.invalid-feedback').remove();
+document.querySelector('#show_password').checked = false;
+document.querySelector('#concorde_termo').checked = false;
+document.querySelector('#password').addEventListener('input', function () {
+    const password = this.value;
 
-        // Validação dos campos de email e senha
-        const name = $('[name=name]').val();
-        const email = $('[name=email]').val();
-        const password = $('[name=password]').val();
-        const passwordConfirmation = $('[name=password_confirmation]').val();
-        const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    // Elementos das regras
+    const length = document.querySelector('#length');
+    const uppercase = document.querySelector('#uppercase');
+    const lowercase = document.querySelector('#lowercase');
+    const number = document.querySelector('#number');
+    const special = document.querySelector('#special');
 
-        let hasError = false;
+    // Expressões regulares
+    const regexUpper = /[A-Z]/;
+    const regexLower = /[a-z]/;
+    const regexNumber = /[0-9]/;
+    const regexSpecial = /[@$!%*?&]/;
 
-        if (!name.length) {
-            setErrorMessage('[name=name]', 'O campo nome é obrigatório.');
-            hasError = true;
-        }
-
-        if (!emailPattern.test(email)) {
-            setErrorMessage('[name=email]', 'Por favor, insira um endereço de email válido.');
-            hasError = true;
-        }
-
-        if (!passwordPattern.test(password)) {
-            setErrorMessage('[name=password]', 'A senha deve ter no mínimo 8 caracteres, incluindo pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial.');
-            hasError = true;
-        }
-
-        if (password !== passwordConfirmation) {
-            setErrorMessage('[name=password_confirmation]', 'A confirmação de senha não corresponde.');
-            hasError = true;
-        }
-
-        if (hasError) {
-            return;
-        }
-
-        const form = $(this);
-        const url = form.attr('action');
-        const data = form.serialize();
-
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: data,
-            dataType: 'json',
-            beforeSend: function () {
-                $('#loader').removeClass('d-done').addClass('d-flex');
-            },
-            success: function (resp) {
-                $('#modal-success').modal('show');
-            },
-            error: function (resp) {
-                const errors = resp.responseJSON.errors;
-                Object.keys(errors).map(name => {
-                    errors[name].map(message => {
-                        setErrorMessage(`[name=${name}]`, message);
-                    });
-                });
-            },
-            always: function () {
-                $('#loader').removeClass('d-flex').addClass('d-done');
-            }
-        });
-    });
-    $('#modal-success').on('hidden.coreui.modal', function (e) {
-        window.location.href = window.location.origin + '/login';
-    });
+    // Validações
+    validateRule(length, password.length >= 8);
+    validateRule(uppercase, regexUpper.test(password));
+    validateRule(lowercase, regexLower.test(password));
+    validateRule(number, regexNumber.test(password));
+    validateRule(special, regexSpecial.test(password));
 });
 
-const setErrorMessage = (field, message) => {
-    $(field).after(
-        $('<div />', { class: 'invalid-feedback', style: 'display:block' }).html(message)
-    );
-};
+function validateRule(element, isValid) {
+    if (isValid) {
+        element.classList.remove('invalid');
+        element.classList.add('valid');
+        element.querySelector('i').classList.remove('heroicon-x');
+        element.querySelector('i').classList.add('heroicon-check');
+    } else {
+        element.classList.remove('valid');
+        element.classList.add('invalid');
+        element.querySelector('i').classList.remove('heroicon-check');
+        element.querySelector('i').classList.add('heroicon-x');
+    }
+}
+
+const $showPwd = document.querySelector("#show_password");
+$showPwd.addEventListener("change", function () {
+    const passwordField = document.querySelector("#password");
+    const confirmField = document.querySelector("#password_confirmation");
+    if (this.checked) {
+        passwordField.type = "text";
+        confirmField.type = "text";
+    } else {
+        passwordField.type = "password";
+        confirmField.type = "password";
+    }
+});
+
+document.querySelector("#register-form").addEventListener("submit", function (e) {
+    e.preventDefault(); // Impede o envio padrão do formulário
+    // Remove mensagens de erro anteriores
+    removeErrorMessages();
+    // Valida os campos
+    const isValid = validateFields();
+    let statusCode = undefined;
+
+    if (isValid) {
+        const formData = new FormData(document.querySelector("#register-form"));
+        formData.append(document.createElement('input').name = '_token', getCsrfToken());
+        fetch('/api/v1/register', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+            .then(response => { statusCode = response.status; return response.json()})
+            .then(data => {
+                if(data.errors) {
+                    Object.keys(data.errors).forEach((key) => {
+                        const field = document.querySelector(`[name=${key}]`);
+                        addErrorMessage(field, data.errors[key][0]);
+                    });
+                    return;
+                }
+                else if(data.error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: data.error ?? 'Erro desconhecido',
+                    });
+                    return;
+                }
+                else if(statusCode != 200) {
+                    Swal.fire({ 
+                        icon: 'error',
+                        title: 'Erro',
+                        text: `${data.message}` ?? 'Erro desconhecido',
+                    });
+                    return;
+                }
+                else if(statusCode >= 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cadastro realizado com sucesso',
+                        text: data.message ?? 'Sucesso!!',
+                    });
+                    return;
+                }
+                Swal.fire({
+                    icon: 'waning',
+                    title: 'Atenção',
+                    text: 'Um erro desconhecido ocorreu!',
+                });
+            })
+    }
+});
+
+function validateFields() {
+    const password = document.querySelector("#password").value;
+    const confirmPassword = document.querySelector("#password_confirmation").value;
+
+    let isValid = true;
+
+    if(document.querySelectorAll(".list-unstyled .invalid").length > 0) {
+        addErrorMessage(document.querySelector("#password"), "A senha não atende aos requisitos.");
+        isValid = false;
+    }
+    if(password !== confirmPassword) {
+        addErrorMessage(document.querySelector("#password_confirmation"), "As senhas não coincidem.");
+        isValid = false;
+    }
+    if(!document.querySelector("#concorde_termo").checked) {
+        addErrorMessage(document.querySelector("#concorde_termo"), "Você deve concordar com os termos.");
+        isValid = false;
+    }
+    return isValid;
+}
+
+function addErrorMessage(field, message) {
+    const errorDiv = document.createElement("div");
+    errorDiv.classList.add("invalid-feedback");
+    errorDiv.textContent = message;
+    field.classList.add("is-invalid"); // Adiciona classe de erro ao campo    
+    field.parentNode.insertBefore(errorDiv, field.nextSibling);
+}
+
+function removeErrorMessages() {
+    const errorMessages = document.querySelectorAll(".invalid-feedback");
+    errorMessages.forEach((message) => {
+        message.remove();
+    });
+
+    document.querySelectorAll(".is-invalid").forEach((field) => {
+        field.classList.remove("is-invalid");
+    });
+}

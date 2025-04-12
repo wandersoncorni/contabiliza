@@ -1,0 +1,1 @@
+<img src="/img/logo2.png" class="img-fluid" style="max-width: {{ $attributes->get('width', '20rem') }};" alt="ContabilizaTech">
