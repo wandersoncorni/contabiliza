@@ -14,20 +14,6 @@
       "targets": [],
       "value": ""
     }, {
-      "id": "4fc715bd-9ef0-4840-a38e-64340a6d6bd4",
-      "comment": "",
-      "command": "click",
-      "target": "id=email",
-      "targets": [
-        ["id=email", "id"],
-        ["name=email", "name"],
-        ["css=#email", "css:finder"],
-        ["xpath=//input[@id='email']", "xpath:attributes"],
-        ["xpath=//form[@id='login-form']/div/div/input", "xpath:idRelative"],
-        ["xpath=//input", "xpath:position"]
-      ],
-      "value": ""
-    }, {
       "id": "3c597d26-62a2-46fa-8459-a49a9f4ac904",
       "comment": "",
       "command": "type",
@@ -40,21 +26,7 @@
         ["xpath=//form[@id='login-form']/div/div/input", "xpath:idRelative"],
         ["xpath=//input", "xpath:position"]
       ],
-      "value": "ignatius.kreiger@example.com"
-    }, {
-      "id": "b82326dd-d2dd-478f-9232-3a0614a740c0",
-      "comment": "",
-      "command": "click",
-      "target": "id=password",
-      "targets": [
-        ["id=password", "id"],
-        ["name=password", "name"],
-        ["css=#password", "css:finder"],
-        ["xpath=//input[@id='password']", "xpath:attributes"],
-        ["xpath=//form[@id='login-form']/div[2]/div/div/input", "xpath:idRelative"],
-        ["xpath=//div[2]/div/div/input", "xpath:position"]
-      ],
-      "value": ""
+      "value": "admin@contabiliza.com.br"
     }, {
       "id": "1480de31-c1ac-42e6-81d0-adc70c4cbe3f",
       "comment": "",
@@ -68,7 +40,7 @@
         ["xpath=//form[@id='login-form']/div[2]/div/div/input", "xpath:idRelative"],
         ["xpath=//div[2]/div/div/input", "xpath:position"]
       ],
-      "value": "Password@123"
+      "value": "Senha@123"
     }, {
       "id": "cf264971-83c5-4505-925f-3674531dedf8",
       "comment": "",

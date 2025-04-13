@@ -20,12 +20,18 @@ class DatabaseSeeder extends Seeder
     {
         Licenciado::factory()->create();        
         // Cria um admininistrador validado
-        $user = User::factory(1)->create();
-        People::factory()->create(['user_id' => $user[0]->id, 'roles' => ["admin"]]);
-        $userObj = User::find($user[0]->id);
-        $userObj->email_verified_at = now();
-        $userObj->active = 1;
-        $userObj->save();
+        $user = User::factory()->create([
+            'email' => 'admin@contabiliza.com.br',
+            'password' => 'Senha@123',
+            'email_verified_at' => now(),
+            'active' => 1
+        ]);
+        
+        People::factory()->create([
+            'name' => 'Admin',
+            'user_id' => $user->id, 
+            'roles' => ["admin"]
+        ]);
 
         $users = User::factory(5)->create();
         $clients = [];

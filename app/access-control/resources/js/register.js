@@ -65,7 +65,7 @@ document.querySelector("#register-form").addEventListener("submit", function (e)
     if (isValid) {
         const formData = new FormData(document.querySelector("#register-form"));
         formData.append(document.createElement('input').name = '_token', getCsrfToken());
-        fetch('/api/v1/register', {
+        fetch('/api/v1/account', {
             method: 'POST',
             body: formData,
             headers: {
@@ -89,7 +89,7 @@ document.querySelector("#register-form").addEventListener("submit", function (e)
                     });
                     return;
                 }
-                else if(statusCode != 200) {
+                else if(statusCode < 200 && statusCode > 299) {
                     Swal.fire({ 
                         icon: 'error',
                         title: 'Erro',
@@ -97,7 +97,7 @@ document.querySelector("#register-form").addEventListener("submit", function (e)
                     });
                     return;
                 }
-                else if(statusCode >= 200) {
+                else if(statusCode >= 200 && statusCode <= 299) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Cadastro realizado com sucesso',
