@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\Registered;
 
 /**
@@ -20,14 +21,17 @@ use Illuminate\Auth\Events\Registered;
 class Account
 {
     /**
-     * Lista os dados da conta
+     * Lista os dados da conta de um usuario
      * @param Request $request
      */
     public function list(Request $request): JsonResponse
     {
         return response()->json(['message' => 'Conta listada com sucesso!'], 200);
     }
-
+    /**
+     * Cria a conta do cliente
+     * @param Request $request
+     */
     public function create(RegisterValidationRequest $request): JsonResponse
     {
         $formData = $request->all();
@@ -52,18 +56,12 @@ class Account
         try {
             $user->active = true;
             $user->save();
-            $person = \App\Application\Models\people::create([
+            \App\Application\Models\Person::create([
                 'user_id' => $user->id,
                 'name' => $formData['name'],
                 'roles' => ['client'],
                 'created_at' => now(),
                 'updated_at' => now(),
-                'licenciado_id' => 1,
-            ]);
-
-            \App\Application\Models\Client::create([
-                'name' => $formData['name'],
-                'people_id' => $person->id,
             ]);
         } catch (\Exception $e) {
             Log::channel('database')->error('Erro ao criar uma nova pessoa.', [$e->getMessage()]);
@@ -117,21 +115,44 @@ class Account
      */
     public function delete(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'password' => 'required|string',
-        ]);
-
-        if (!Hash::check($data['password'], Auth::user()->password)) {
-            return response()->json(['error' => 'A senha informada não confere!'], 401);
-        }
-
-        $resp = UserModel::where('id', Auth::user()->id)->delete();
-
-        if ($resp) {
+        request()->merge(['id' => Auth::user()->id]);// Adiciona o ID do usuario a requisicao para acionar o observer
+        if (Auth::user()->delete()) {
             Mail::to(Auth::user()->email)->send(new UserDeletedMail(Auth::user()));
             Log::channel('database')->info('Exclusão da conta pelo usuário', ['user_id' => Auth::user()->id, 'email' => Auth::user()->email]);
+            session()->flush();
+            session()->regenerate();
             return response()->json(['message' => 'Conta deletada com sucesso!'], 200);
         }
         return response()->json(['error' => 'Ocorreu um erro ao tenttar deletar sua conta!'], 400);
+    }
+    /**
+     * Metodo para enviar o link para redefinicao de senha esquecida pelo usuarioo
+     * Condicoes:
+     * - O usuario deverar estar cadstrado na aplicacao
+     * - A conta deve estar habilitada
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        if (empty($validated)) {
+            return response()->json(['error' => 'O endereço de email não existe!'], 400);
+        }
+
+        if (!Auth::user()->active) {
+            return response()->json(['error' => 'A conta se encontra inativa!'], 400);
+        }
+
+        Password::sendResetLink($validated);
+
+        if (Password::RESET_LINK_SENT) {
+            return response()->json(['message' => 'O link para redefinição de senha foi enviado para o seu e-mail.'], 200);
+        }
+
+        return response()->json(['error' => 'Não conseguimos encontrar um usuário com esse e-mail.'], 401);
     }
 }

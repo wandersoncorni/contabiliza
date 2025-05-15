@@ -2,7 +2,7 @@
 
 namespace App\Application\Providers;
 
-use App\Application\Models\People;
+use App\AccessControl\Models\User;
 use Illuminate\Support\ServiceProvider;
 
 class ApplicationServiceProvider extends ServiceProvider
@@ -11,6 +11,6 @@ class ApplicationServiceProvider extends ServiceProvider
 
 	public function boot(): void
 	{
-		People::observe(\App\Application\Observers\People::class);
+		User::observe(\App\Application\Observers\User::class);
 	}
 }

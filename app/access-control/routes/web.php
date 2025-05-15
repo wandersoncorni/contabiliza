@@ -28,7 +28,16 @@ Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
 })->middleware(['auth:sanctum'])->name('verification.send');
 
-Route::get('/email/verify', function (Request $request) {
-    session(['verify' => $request->all()]);
-    return redirect('/login');
-})->name('verification.verify');
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+});
+
+Route::get('account', function () {
+    return view('access-control::account');
+})->name('view.account');
+
+Route::middleware(['auth:sanctum','verified'])->group(function () {
+    Route::get('users', function () {
+        return view('access-control::users');
+    })->name('view.users');
+});

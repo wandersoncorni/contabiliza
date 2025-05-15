@@ -17,12 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'haspermission' => \App\AccessControl\Http\Middleware\HasPermission::class,
         ]);
-        // $middleware->statefulApi();
-        $middleware->api([
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            'throttle:1000,1',
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        ]);
+        $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: ['api/v1/logout']);
+        // Adiciona o middleware para evitar o back history
+        $middleware->append(\App\AccessControl\Http\Middleware\PreventBackHistory::class, 'preventBackHistory');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

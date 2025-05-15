@@ -42,8 +42,7 @@ class RBACService
             }
             $rbac->getRole($role)->addParent($rbac->getRole($permission['role']['parent']['label']));
             $rbac->getRole($role)->addPermission($permission['action']['label'].'.'. $permission['asset']['label']);
-        }
-        
+        }        
         return $rbac;
     }
     /**
@@ -69,5 +68,13 @@ class RBACService
     public function clearCache(): void {
         $this->rbac = new Rbac();
         Cache::forget('rbac_roles');
+    }
+
+    public function hasRole(string $role): bool {
+        return $this->rbac->hasRole($role);
+    }
+
+    static function getInstance(): RBACService {
+        return app(RBACService::class);
     }
 }

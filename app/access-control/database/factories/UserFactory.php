@@ -25,7 +25,7 @@ class UserFactory extends Factory
     {
         return [
             'email' => fake()->unique()->safeEmail(),
-            'password' => 'Password@123',
+            'password' => 'Senha@123',
             'email_verified_at' => null,
             'remember_token' => null,
             'active' => 1,

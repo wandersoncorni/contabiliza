@@ -17,6 +17,7 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <link href="{{ asset('/vendor/sweetalert2/dist/sweetalert2.min.css') }}" rel="stylesheet">
     @stack('styles_href')
     <link type="text/css" href="{{ asset('css/volt.css') }}" rel="stylesheet">
     <link type="text/css" href="{{ asset('css/layout.css') }}" rel="stylesheet">
@@ -102,9 +103,13 @@
         <div class="loader"></div>
     </div>
     @yield('content')
-    @stack('scripts_src')
+    <script src="{{ asset('/vendor/@popperjs/core/dist/umd/popper.min.js')}}"></script>
+    <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+    <script src="{{ asset('/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js')}}"></script>
+    <script src="{{ asset('/vendor/smooth-scroll/dist/smooth-scroll.min.js')}}"></script>
+    <script src="{{ asset('/vendor/sweetalert2/dist/sweetalert2.all.min.js') }}"></script>   
     <script src="{{ asset('js/volt.js') }}"></script>
-    @stack('scripts')
+     @stack('scripts_src')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const loader = document.getElementById("loader");
@@ -129,24 +134,7 @@
             }
         }
 
-        const loader = new Loader();
-
-        // Interceptando XMLHttpRequest
-        (function() {
-            const open = XMLHttpRequest.prototype.open;
-            const send = XMLHttpRequest.prototype.send;
-
-            XMLHttpRequest.prototype.open = function(...args) {
-                this.addEventListener("loadstart", () => loader.show());
-                this.addEventListener("loadend", () => loader.hide());
-                return open.apply(this, args);
-            };
-
-            XMLHttpRequest.prototype.send = function(...args) {
-                loader.show();
-                return send.apply(this, args);
-            };
-        })();
+        const loader = new Loader();      
 
         // Interceptando fetch API
         const originalFetch = window.fetch;
@@ -159,11 +147,8 @@
                 loader.hide();
             }
         };
-        //Recupera o token
-        function getCsrfToken() {
-            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        }
     </script>
+    @stack('scripts')
 </body>
 
 </html>

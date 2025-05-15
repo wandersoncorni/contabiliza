@@ -7,15 +7,16 @@
  */
 
 use App\AccessControl\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 it('nao executa o login de um usuario com email nao verificado', function () {
     $user = User::where('email_verified_at', null)->whereHas('person', function ($query) {
         $query->where('roles', 'LIKE', '%client%');
-    })->get()->first();
-
+    })->first();
+    
     $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
-        'password' => 'Password@123',
+        'password' => 'Senha@123',
     ]);
     
     $response->assertStatus(403)
@@ -29,20 +30,13 @@ it('nao executa o login um usuario desativado', function () {
     $user->save();
     $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
-        'password' => 'Password@123',
+        'password' => 'Senha@123',
     ]);
 
     $response->assertStatus(403)
         ->assertJson(['error' => 'Conta inativa! Verifique seu email ou informe ao administrador.']);
 });
 
-/**
- * Testa o login de um usuario
- * Condição: 
- *  - O usuario deve estar cadastrado no sistema
- *  - O email devee ser valido
- *  - O usuario deve estar ativo
- */
 it('executa o login  de um usuario ativo e email verificado', function () {
     $user = User::first();
     $user->email_verified_at = now();
@@ -50,11 +44,11 @@ it('executa o login  de um usuario ativo e email verificado', function () {
     $user->save();
     $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
-        'password' => 'Password@123',
+        'password' => 'Senha@123',
     ]);
 
-    $response->assertStatus(200)
-        ->assertJsonStructure(['token']);
+    $response->assertStatus(200);
+    expect(Auth::user())->not()->toBeNull();
 });
 /**
  * Testa o logout de um usuario
@@ -63,10 +57,9 @@ it('executa o logout de um usuário', function () {
     $user = User::first();
     $this->postJson('/api/v1/login', [
         'email' => $user->email,
-        'password' => 'Password@123',
+        'password' => 'Senha@123',
     ]);
 
-    $response = $this->get('/api/v1/logout');
-
-    $response->assertStatus(302);
+    $response = $this->postJson('/api/v1/logout',[]);
+    $response->assertStatus(200);
 });

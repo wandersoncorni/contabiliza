@@ -9,8 +9,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use App\AccessControl\Services\RBACService;
-use App\Application\Models\People;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Application\Models\Person;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
@@ -22,7 +22,6 @@ class User extends Authenticatable implements MustVerifyEmailContract
      * @var string
      */
     protected $table = 'users';
-
     /**
      * Atributos que podem ser atribuídos em massa.
      *
@@ -31,8 +30,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
     protected $fillable = [
         'email',
         'password',
+        'active'
     ];
-
     /**
      * Os atributos que devem ser ocultados para arrays.
      *
@@ -51,7 +50,6 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'email_verified_at' => 'datetime',
         'password' => 'hashed'
     ];
-
     /**
      * Valores padrao
      */
@@ -77,8 +75,15 @@ class User extends Authenticatable implements MustVerifyEmailContract
      * Relacionamento com a tabela de pessoas
      * @return Object
      */
-    public function person(): HasOne
+    public function person(): BelongsTo
     {
-        return $this->hasOne(People::class);
+        return $this->belongsTo(Person::class,'id','user_id');
+    }
+    /**
+     * Confirma se o usuario possui um perfil
+     */
+    public function hasRole($role): bool
+    {
+        return in_array($role, $this->person->roles);
     }
 }

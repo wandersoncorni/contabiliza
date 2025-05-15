@@ -4,6 +4,10 @@ namespace App\AccessControl\Http\Controllers;
 
 use App\AccessControl\Models\User as UserModel;
 use App\AccessControl\Mail\EmailConfirmacaoEdicao;
+use App\AccessControl\Mail\UserCreatedAdminNotification;
+use App\AccessControl\Http\Requests\UserValidationRequest;
+use App\AccessControl\Mail\UserDeletedMail;
+use App\AccessControl\Models\Role;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,10 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Auth\Events\Registered;
-use App\AccessControl\Mail\UserCreatedAdminNotification;
-use App\AccessControl\Http\Requests\RegisterValidationRequest;
 use Illuminate\Support\Str;
-use App\AccessControl\Mail\UserDeletedMail;
 
 class User
 {
@@ -28,47 +29,24 @@ class User
      */
     public function list(Request $req): JsonResponse
     {
-        $fields = $req->query('fields');
-
-        // Se o parâmetro 'fields' existir, validamos os campos
-        if ($fields) {
-            // Converte a string de campos separados por virgula em um array
-            $fieldsArray = explode(',', $fields);
-
-            // Define os campos permitidos
-            $validFields = ['id', 'name', 'email', 'photo', 'perfil', 'active',];
-
-            // Cria uma validacao para garantir que os campos sejam validos
-            $validator = Validator::make(
-                ['fields' => $fieldsArray],
-                [
-                    'fields' => 'array', // Verifica se eh um array
-                    'fields.*' => 'in:' . implode(',', $validFields) . '|distinct' // Verifica se cada campo eh valido
-                ]
-            );
-
-            // Se a validacao falhar, retorna um erro
-            if ($validator->fails()) {
-                $errorsMessages = [];
-                foreach ($validator->errors()->getMessages() as $key => $errors) {
-                    $invalidField = $fieldsArray[str_replace('fields.', '', $key)];
-                    $errorsMessages[] = str_replace($key, $invalidField, current($errors));
-                }
-                return response()->json($errorsMessages, 400);
-            }
-
-            // Filtra os campos validos
-            $fieldsArray = array_intersect($fieldsArray, $validFields);
-
-            // Realiza a consulta com os campos filtrados
-            $users = UserModel::select($fieldsArray)->with('profile:id,label')->orderBy('name', 'ASC')->get();
-        } else {
-            // Se não houver o parâmetro 'fields', retorna todos os dados
-            $users = UserModel::orderBy('name', 'ASC')->with('profile:id,label')->get();
+        $query = UserModel::select('id','email', 'email_verified_at', 'active', 'created_at' );
+        if(!Auth::user()->hasRole('admin')){
+            $query->whereHas('person', function ($query) {
+                $query->where('licensed_id', Auth::user()->person->licensed_id);
+            });
         }
-
-        return response()->json($users);
-        return response()->json([], 200);
+        $query->with([
+            'person:id,user_id,licensed_id,name,roles,photo',
+            'person.licensed:id,name',
+            'person.client',
+        ]);
+        $roles = Role::all();
+        $usersList = $query->get();
+        $usersList->map(function ($user) use ($roles) {
+            $user->person->role_name = $roles->where('label', $user->person->roles[0])->first()['name'];
+            return $user;
+        });
+        return response()->json($usersList, 200);
     }
     /**
      * Metodo para criar um novo usuario
@@ -81,61 +59,39 @@ class User
      * @param RegisterValidationRequest $request
      * @return JsonResponse
      */
-    public function create(RegisterValidationRequest $req): JsonResponse
+    public function create(UserValidationRequest $req): JsonResponse
     {
         $formData = $req->all();
-        $requireds = ['name'=>'nome', 'email'=>'email', 'role'=>'perfil'];
-        foreach ($requireds as $key=>$fieldName) {
-            if (!isset($formData[$key]) || empty($formData[$key])) {
-                return response()->json(['error' => 'O campo "' . $fieldName . '" é obrigatorio.'], 400);
-            }
-        }
-        // Verifica se o perfil selecionado eh de agente e se nao foi informado o id do cliente
-        if($formData['role'] == 'agent' && (!isset($formData['client_id']) || empty($formData['client_id']))) {
+
+        // Verifica se o perfil selecionado eh de agente e se foi informado o id do cliente
+        if ($formData['role'] == 'agent' && (!isset($formData['client_id']) || empty($formData['client_id']))) {
             return response()->json(['error' => 'Informe o cliente para o perfil de agente.'], 400);
         }
         // Valida se o usuario logado tem permissão para criar um usuario com o perfil selecionado
-        if (!Auth::user()->hasPermission('any.users') && !Auth::user()->hasPermission('create.' . $formData['role'])) {
-            return response()->json(['error' => ' Você nao tem permissão para criar um usuario com o perfil selecionado.'], 403);
+        if (!Auth::user()->hasPermission('any.any') && !Auth::user()->hasPermission('create.' . $formData['role'])) {
+            return response()->json(['error' => 'Você nao tem permissão para criar um usuario com o perfil selecionado.'], 403);
         }
         // Cria a senha aleatoria
         $formData = array_merge($formData, ['password' => Hash::make(Str::random(8))]);
-        
+
         // Criar o usuário
-        $user = UserModel::create(['email' => $formData['email'], 'password' => $formData['password']]);
+        $user = UserModel::create(['email' => $formData['email'], 'password' => $formData['password'], 'active' => 1]);
 
         if (!$user) {
             return response()->json(['message' => 'Erro ao criar o usuário.'], 500);
         }
         // Cria a pessoa relacionada ao usuario e associa a um cliente ou agente se for o caso
         try {
-            $user->active = true;
-            $user->save();
-            $person = \App\Application\Models\people::create([
-                'user_id' => $user->id,
-                'name' => $formData['name'],
-                'roles' => [$formData['role']],
-                'created_at' => now(),
-                'updated_at' => now(),
-                'licenciado_id' => 1,
-            ]);
-            // Se o perfil for de cliente, cria um novo registro na tabela clients
-            if ($formData['role'] == 'client') {
-                \App\Application\Models\Client::create([
-                    'name' => $formData['name'],
-                    'people_id' => $person->id,
-                ]);
-            }
-            elseif($formData['role'] == 'agent'){
-                \App\Application\Models\Agent::create([
-                    'client_id' => $formData['client_id'],
-                    'people_id' => $person->id
-                ]);
+            $formData['user_id'] = $user->id;
+            $formData['roles'] = [$formData['role']];
+            $person = \App\Application\Models\Person::create($formData);
+            if ($formData['role'] == 'agent') {
+                \App\Application\Models\PersonClient::create(['client_id' => $formData['client_id'], 'person_id' => $person->id]);
             }
         } catch (\Exception $e) {
-            Log::channel('database')->error('user.create:' . $e->getMessage());
+            Log::channel('database')->error('user.create:' . $e->getMessage());dd($e->getMessage());
             $user->delete();
-            return response()->json(['message' => 'Erro ao criar o usuário.'], 500);
+            return response()->json(['message' => 'Erro ao criar o usuário e pessoa.'], 500);
         }
         // Disparar evento de verificação de email
         event(new Registered($user));
@@ -282,16 +238,19 @@ class User
             return response()->json(['error' => "Identificador inválido!"], 401);
         }
 
-        $user = UserModel::find($validated['id']);
+        $user = UserModel::with(['person.licensed'])->find($validated['id']);
         // Valida a permissao do suario       
-        if (!Auth::user()->hasPermission('any.users')) {
+        if (!Auth::user()->hasPermission('any.any')) {
             $canDelete = false;
-            foreach ($user->person->roles as $role) {
-                if (Auth::user()->hasPermission('delete.' . $role)) {
+            $authLicensedId = Auth::user()->person->licensed_id;// Id do licenciado do usuario logado
+            $userLicensedId = $user->person->licensed_id;// Id do licenciado do usuario a ser excluido
+            $userRole = $user->person->roles[0];// Pega o primeiro perfil do usuario a ser excluido
+            
+            if (!is_null($authLicensedId) && !is_null($userLicensedId) && ($authLicensedId == $userLicensedId)) {
+                if (Auth::user()->hasPermission('delete.' . $userRole)) {
                     $canDelete = true;
-                    break;
                 }
-            }
+            }                
             if (!$canDelete) {
                 return response()->json(['error' => "Você não tem permissão para excluir o usuário $user->name!"], 403);
             }
@@ -303,41 +262,11 @@ class User
                 'user_id' => $user->id,
                 'Nome' => $user->name,
                 'acao' => 'Exclusao de usuario',
-                'autor' => Auth::user()->name
+                'autor' => Auth::user()->person->name
             ]);
             Mail::to($user->email)->send(new UserDeletedMail($user));
             return response()->json(['message' => "O usuário $user->name foi excluído com sucesso!"], 200);
         };
         return response()->json(['error' => "Ocorreu um erro ao tentar excluir o usuário $user->name!"], 400);
-    }
-    /**
-     * Metodo para enviar o link para redefinicao de senha esquecida pelo usuarioo
-     * Condicoes:
-     * - O usuario deverar estar cadstrado na aplicacao
-     * - A conta deve estar habilitada
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function forgotPassword(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        if (empty($validated)) {
-            return response()->json(['error' => 'O endereço de email não existe!'], 400);
-        }
-
-        if (!Auth::user()->active) {
-            return response()->json(['error' => 'A conta se encontra inativa!'], 400);
-        }
-
-        Password::sendResetLink($validated);
-
-        if (Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'O link para redefinição de senha foi enviado para o seu e-mail.'], 200);
-        }
-
-        return response()->json(['error' => 'Não conseguimos encontrar um usuário com esse e-mail.'], 401);
     }
 }

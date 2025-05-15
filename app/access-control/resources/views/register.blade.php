@@ -30,6 +30,7 @@
                         <h1 class="mt-3 mb-0 h3">Crie sua conta</h1>
                     </div>
                     <form action="#" class="mt-4" id="register-form">
+                        @csrf
                         <div class="form-group mb-4">
                             <label for="name">Nome</label>
                             <div class="input-group">

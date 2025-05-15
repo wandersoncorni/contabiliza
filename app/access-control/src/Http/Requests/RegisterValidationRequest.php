@@ -26,13 +26,13 @@ class RegisterValidationRequest extends FormRequest
     {
         return [
             'email' => [
-                (Auth::check() ? 'nullable' : 'required'),
+                'required',
                 'string',
                 'email',
                 'max:255',
             ],
             'password' => [
-                (Auth::check() ? 'nullable' : 'required'),
+                'required',
                 'string',
                 'min:8', //comprimento mínimo
                 'confirmed', // campo de confirmação
@@ -42,24 +42,15 @@ class RegisterValidationRequest extends FormRequest
                 'regex:/[\W_]/',  // pelo menos um caractere especial
             ],
             'password_confirmation' => [
-                (Auth::check() ? 'nullable' : 'required'),
+                'required',
                 'string',
+                'same:password'
             ],
             'name' => [
-                (Auth::check() ? 'nullable' : 'required'),
+                'required',
                 'string',
                 'max:255',
-            ],
-            'role' => [
-                'sometimes',
-                'string',
-                Rule::in(Role::select('label')
-                    ->where('deleted_at', null)
-                    ->get()
-                    ->pluck('label')
-                    ->toArray()),
-            ],
-            'client_id' => 'sometimes|integer',
+            ]
         ];
     }
     /**
@@ -77,12 +68,10 @@ class RegisterValidationRequest extends FormRequest
             'password.regex' => 'A senha deve conter pelo menos uma letra maiúscula, uma letra minúscula, um número e um caractere especial.',
             'password.confirmed' => 'A confirmação de senha não confere.',
             'password_confirmation.required' => 'A confirmação de senha é obrigatória.',
+            'password_confirmation.same' => 'A confirmação de senha não confere.',
             'name.required' => 'O nome é obrigatório.',
             'name.string' => 'O nome deve conter somente caracteres padrões.',
             'name.max' => 'O nome deve ter no máximo 255 caracteres.',
-            'roles.array' => 'O campo de permissões deve ser um array.',
-            'roles.*.string' => 'Cada permissão deve ser um texto.',
-            'roles.*.in' => 'Cada permissão deve ser uma permissão existente.',
         ];
     }
 }

@@ -22,9 +22,11 @@ return new class extends Migration
         Schema::create('people', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('licenciado_id')->onDelete('cascade')->nullable();
+            $table->foreignId('client_id')->nullable()->constrained('people', 'id')->cascadeOnDelete();
+            $table->foreignId('licensed_id')->nullable()->constrained('licensed')->onDelete('cascade'); 
             $table->string('name')->nullable();
             $table->string('phone', 20)->nullable();
+            $table->string('photo', 20)->nullable();
             $table->string('roles', 20);
             $table->timestamps();
         });

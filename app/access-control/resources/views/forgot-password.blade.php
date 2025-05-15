@@ -1,4 +1,7 @@
 @extends('layout')
+@push('scripts')
+    <script src="{{ asset('js/forgot-password.js') }}"></script>
+@endpush
 @section('content')
 <main>
     <section class="vh-lg-100 mt-5 mt-lg-0 bg-soft d-flex align-items-center">
@@ -11,7 +14,7 @@
                         </div>
                         <h1 class="h3">Esqueceu a senha?</h1>
                         <p class="mb-4">Não se precupe! Informe o seu email e vamos lhe enviar um link para redefinir sua senha!</p>
-                        <form action="#">
+                        <form action="#" id="formForgotPassword">
                             <!-- Form -->
                             <div class="mb-4">
                                 <label for="email">Seu email</label>
