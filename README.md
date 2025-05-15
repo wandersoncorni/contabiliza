@@ -122,7 +122,7 @@ composer require laminas/laminas-permissions-rbac
 ### module_path(<nome-modulo>,<complemento>)
 - Retorna o path para o módulo. Se informado o complemento
 
-## Módulos implamentados
+## Módulos implementados
 1) Autenticação:
     - Login
     - Cadastro de usuário (cliente)
