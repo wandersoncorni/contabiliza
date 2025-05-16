@@ -30,11 +30,18 @@ $(document).ready(function () {
                 if (response.status === 200) {
                     return response.text();
                 }
-                else if(response.status === 404){
+                else if (response.status === 404) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Página não encontrada!',
                         text: "A página que você tentou acessar não foi encontrada.",
+                    });
+                }
+                else if (response.status === 403) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acesso negado!',
+                        text: "Não possui permissão para acessar essa página.",
                     });
                 }
                 else {
@@ -50,6 +57,13 @@ $(document).ready(function () {
                 $(this).parent().addClass('active');
                 sessionStorage.setItem("sidebarMenuItem", $(this).attr('href'));
                 $('#app-content').html(html);
+
+                const event = new CustomEvent('page:loaded', {
+                    detail: {
+                        url: $(this).attr('href')
+                    }
+                });
+                document.dispatchEvent(event);
             })
     });
     $(`#sidebarMenu ul li a[href="${sessionStorage.getItem("sidebarMenuItem") ?? "/painel"}"]`).trigger('click');
@@ -89,7 +103,7 @@ $(document).ready(function () {
  * @param {string} url 
  * @returns 
  */
-globalThis.loadUsersTable = function(container, url) {
+globalThis.loadUsersTable = function (container, url) {
     return new DataTable(container, {
         ajax: function (data, callback, settings) {
             fetch(url, {

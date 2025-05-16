@@ -8,6 +8,8 @@ use App\Application\Http\Controllers\Agent;
 use App\Application\Http\Controllers\Client;
 use App\Application\Http\Controllers\Consultant;
 use App\Application\Http\Controllers\Licensed;
+use App\Application\Http\Controllers\Portfolio;
+use App\Application\Http\Controllers\ServicePlan;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
@@ -16,25 +18,19 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
      * Para o parametro "asset" da permissao, se houver a "/" no inicio eh uma rota.
      * se nao, eh um recurso
      */
-    Route::middleware(['haspermission:access./licensed'])
-        ->controller(Licensed::class)->group(function () {
-            Route::get('licensed', 'list');
-            Route::get('licensed/{id}', 'listLicensed');
+    Route::middleware(['haspermission:access.manager'])->group(function () {
+        Route::controller(Portfolio::class)->group(function () {
+            Route::get('portfolios', 'list');
+            Route::get('portfolio', 'listPortifolio');
+            Route::post('portfolio', 'create');
+            Route::put('portfolio', 'update');
+            Route::delete('portfolio', 'delete');
         });
 
-    Route::middleware(['haspermission:access./consultants'])
-        ->controller(Consultant::class)->group(function () {
-            Route::get('consultants', 'list');
-            Route::get('consultant', 'listConsultant');
-        });
+        Route::get('clients', [Client::class, 'list']);
 
-    Route::middleware(['haspermission:access./consultants'])
-        ->controller(Client::class)->group(function () {
-            Route::get('clients', 'list');
-        });
+        Route::get('consultants', [Consultant::class, 'list']);
 
-    Route::middleware(['haspermission:access./agents'])
-        ->controller(Agent::class)->group(function () {
-            Route::get('agents', 'list');
-        });
+        Route::get('services-plans', [ServicePlan::class, 'list']);
+    });
 });

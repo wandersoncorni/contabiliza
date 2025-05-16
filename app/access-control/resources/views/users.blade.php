@@ -129,5 +129,3 @@
         </div>
     </div>
 </div>
-<script src="{{ asset('vendor/datatables/datatables.min.js') }}"></script>
-<script src="{{ asset('js/users.js') }}"></script>

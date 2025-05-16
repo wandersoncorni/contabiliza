@@ -18,9 +18,9 @@ return [
         'roles' => ['admin'],
     ],
     [
-        'label' => 'Consultores',
-        'route' => '/consultants',
-        'icon' => 'heroicon-users',
+        'label' => 'Carteiras',
+        'route' => '/portfolios',
+        'icon' => 'heroicon-folder-opened',
         'roles' => ['manager'],
     ],
     [
@@ -30,21 +30,33 @@ return [
         'roles' => ['manager','consultant'],
     ],
     [
+        'label' => 'Consultores',
+        'route' => '/consultants',
+        'icon' => 'heroicon-users',
+        'roles' => ['manager'],
+    ],
+    [
+        'label' => 'Planos',
+        'route' => '/plans',
+        'icon' => 'heroicon-tag',
+        'roles' => ['manager'],
+    ],
+    [
         'label' => 'Agentes',
         'route' => '/agents',
         'icon' => 'heroicon-users',
-        'roles' => ['manager','consultant','client'],
+        'roles' => ['client'],
     ],
     [
         'label' => 'Empresas',
         'route' => '/companies',
         'icon' => 'heroicon-modern-house',
-        'roles' => ['manager','consultant','client'],
+        'roles' => ['client'],
     ],
     [
         'label' => 'Sócios',
         'route' => '/partners',
         'icon' => 'heroicon-users',
-        'roles' => ['manager','consultant','client'],
-    ]
+        'roles' => ['client'],
+    ],
 ];

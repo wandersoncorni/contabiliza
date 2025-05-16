@@ -8,34 +8,57 @@ Route::middleware(['auth:sanctum','verified'])->group(function () {
     })->name('view.app');
 
     Route::get('/painel', function () {
-        return view('application::painel.'.session('rule_context'));
+        return view('application::'.session('rule_context').'.index');
     })->name('view.painel');
 
-    Route::middleware(['haspermission:access./licensed'])->get('/licensed', function () {
-        return view('application::licensed.index');
-    })->name('view.licensed');
+    Route::middleware(['haspermission:access.admin'])->group(function () { 
+        Route::get('/licensed', function () {
+            return view('application::admin.licensed');
+        })->name('view.licensed');
+    });
 
-    Route::middleware(['haspermission:access./consultants'])->get('/consultants', function () {
-        return view('application::consultants.index');
-    })->name('view.consultants');
+    Route::middleware(['haspermission:access.manager'])->group(function () { 
+        Route::get('/consultants', function () {
+            return view('application::manager.consultants');
+        })->name('view.consultants');
 
-    Route::middleware(['haspermission:access./clients'])->group(function () {
         Route::get('/clients', function () {
-            return view('application::clients.index');
+            return view('application::manager.clients');
         })->name('view.clients');
 
+        Route::get('/partners', function () {
+            return view('application::manager.partners');
+        })->name('view.partners');
+
         Route::get('/companies', function () {
-            return view('application::companies.index');
+            return view('application::manager.companies');
+        })->name('view.companies');
+
+        Route::get('/agents', function () {
+            return view('application::manager.agents');
+        })->name('view.agents');
+
+        Route::get('/plans', function () {
+            return view('application::manager.plans');
+        })->name('view.plans');
+
+        Route::get('/portfolios', function () {
+            return view('application::manager.portfolios');
+        })->name('view.portfolios');
+    });
+
+    Route::middleware(['haspermission:access.client'])->group(function () {
+        Route::get('/agents', function () {
+            return view('application::client.agents');
+        })->name('view.agents');
+
+        Route::get('/companies', function () {
+            return view('application::client.companies');
         })->name('view.companies');
 
         Route::get('/partners', function () {
-            return view('application::partners.index');
+            return view('application::client.partners');
         })->name('view.partners');
+        
     });
-
-    Route::middleware(['haspermission:access./agents'])->get('/agents', function () {
-        return view('application::agents.index');
-    })->name('view.agents');
-
-
 });
