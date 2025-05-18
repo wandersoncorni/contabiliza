@@ -1,8 +1,7 @@
 <?php
-/**
- * Rotas da API
- */
 
-$basePath = dirname(__DIR__);
-require $basePath.'/app/access-control/routes/api.php';
-require $basePath.'/app/application/routes/api.php';
+use Illuminate\Support\Facades\Route;
+
+foreach (glob(base_path('app/*/routes/api.php')) as $routeFile) {
+    require $routeFile;
+}

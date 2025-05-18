@@ -1,135 +1,66 @@
-# Contabiliza
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-## Dependências
-- **Internachi (modularização):**
-    - Instalação: 
-    ```
-    composer require internachi/modular
-    ```
-    - Publicar a configuração: php artisan vendor:publish --tag=modular-config
-    - Configuração: criar ou copiar o arquivo de configuração ./config/app-modules.php
-    - Para publicar a configuração: 
-    ```
-    php artisan vendor:publish --tag=modular-config
-    ```
-    - Para criar um módulo: 
-    ```
-    php artisan make:module my-module
-    ```
-    - Atualizar o composer: 'composer update modules/my-module'.
-    - Configura o módulo: 'php artisan modules:sync'.
-    - Comandos: 
-        - Cria um controller no módulo
-        ```
-        php artisan make:controller MyModuleController --module=[module name]
-        ```
-        - Cria um seed
-        ```
-        php artisan db:seed --module=[module name]
-        ```
-    - Veja: https://github.com/InterNACHI/modulars
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-- **Bibliotecas de API do laravel:**
-    - Instalação: php artisan install:api
-    - Editar o arquivo ./boostrap.app.php, linha 8 (withRouting) e adicionar o caminho do arquivo de rota "api: __DIR__.'/../routes/api.php'".
-    - Para criar um alias para a rota a API, insira no mesmo ponto (método withRouting) a chave "apiPrefix: 'api/v1'". Isso cria também um alias para o nome da rota com o padrão "api.v1".
-    - Configuração das rotas da API no arquivo ./routes/api.php
+## About Laravel
 
-- **Laravel Mix**
-    - Instalação via npm: npm install && npm install laravel-mix --save-dev
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- **Sanctum**
-    - Instalação:
-    ```
-    composer require laravel/sanctum
-    ```
-    - Configuração: 
-    ```
-    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-    ```
-    
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-- **Argon2**
-    - Verificar se o PHP tem suporte: php -m | grep argon2
-    - Criar o arquivo de configuração em config/hash.php: return ['driver' => 'argon2id'];
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Configurar as rotas da API
-- Instalar o roteamento API: php artisan install:api.
-- Criar as rotas para a API no arquivo ./routes/api.php.
-- inserir no arquivo ./boostrap/app.php, método "withRouting" o abaixo:
-```
-api: __DIR__.'/../routes/api.php',
-apiPrefix: 'api/v1',
-```
-## Testes
-- O framework de testes instalado é o Pest
-- Para configurar os testes, insira no arquivo ./test/Pest.php:
-```
-pest()->extend(Tests\TestCase::class)->in('app/*/tests/*');
-```
-- Para rodar testes: 
-```
-php artisan migrate:reset --env=testing && \
-php artisan migrate --env=testing && \
-php artisan test --filter AuthTest --env=testing
-```
-## Logs da aplicação
-- Configurar o arquivo ./config/logging.php criando um "channel"
-```
-'channels' => [
-    'database' => [
-            'driver' => 'custom',
-            'via' => \App\Logging\DatabaseLogger::class,
-            'level' => env('LOG_LEVEL', 'debug'),
-        ],
-    ],
-```
-- Criar o arquivo informado na chave "via"
-- Uso: 
-```
-Log::channel('database')-><tipo>(<mensagem>,[<context>]);
-```
+## Learning Laravel
 
-## Instalação do RBAC
-- Para instalar o RBAC do Laminas framework:
-```
-composer require laminas/laminas-permissions-rbac
-```
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-## Requisitos
-### Login
+You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
 
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-### Usuário:
-1) Termos:
-    - Cliente: usuário que se cadastra na página de cadastro no domínio público.
-    - Colaboradores: os demais usuários com perfis para execução de tarefas administrativas.
-2) Perfil:
-    - Administrador: pessoa que gerencia a manutenção da aplicação.
-        - Cadastra o franquiado.
-        - Acessa o painel de administrador.
-    - Franquiado: pessoa que contrata a aplicação para gerir seus clientes
-        - Cadastra os usuários para operacionalização da ferramenta (gerente, consultor, etc..)
-    - Gerente: pessoa cadastrada pelo franqueado para gerir os clientes
-        - Cadastra o consultor
-        - Edita conta de clientes somente para auxílio na recuperação de acesso
-        - Acessa o painel do cliente
-    - Consultor: qualquer pessoa do franquiado, contador ou auxiliar, que auxilia o cliente na aplicação. 
-    - Cliente: pessoa que contrata o escritório/proffisional de contabilidade
-    - Colaborador: pessoa cadastrada pelo cliente para auxiliar na sua gestão. 
+## Laravel Sponsors
 
-## Helpers
-### module_path(<nome-modulo>,<complemento>)
-- Retorna o path para o módulo. Se informado o complemento
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-## Módulos implementados
-1) Autenticação:
-    - Login
-    - Cadastro de usuário (cliente)
-    - Recuperação de senha
-2) Autorização (RBAC)
-3) Cadastro de usuário (edição de conta)
-4) Cadastro de empresa (cliente)
+### Premium Partners
 
-## Banco de dados
-- Os registros documentais da criação das tabelas estão no arquivo de migração
+- **[Vehikl](https://vehikl.com/)**
+- **[Tighten Co.](https://tighten.co)**
+- **[WebReinvent](https://webreinvent.com/)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
+- **[Cyber-Duck](https://cyber-duck.co.uk)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Jump24](https://jump24.co.uk)**
+- **[Redberry](https://redberry.international/laravel/)**
+- **[Active Logic](https://activelogic.com)**
+- **[byte5](https://byte5.de)**
+- **[OP.GG](https://op.gg)**
+
+## Contributing
+
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
