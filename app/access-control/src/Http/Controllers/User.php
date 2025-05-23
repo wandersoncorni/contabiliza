@@ -30,6 +30,7 @@ class User
     public function list(Request $req): JsonResponse
     {
         $query = UserModel::select('id','email', 'email_verified_at', 'active', 'created_at' );
+        // Se o usuario nao for admin, ele so pode ver os usuarios da sua empresa licenciada para uso da aplicacao
         if(!Auth::user()->hasRole('admin')){
             $query->whereHas('person', function ($query) {
                 $query->where('licensed_id', Auth::user()->person->licensed_id);

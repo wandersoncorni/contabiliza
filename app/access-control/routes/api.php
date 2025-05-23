@@ -37,7 +37,7 @@ Route::get('/email/verify', function (Request $request) {
 })->name('verification.verify');
 
 // Rotas para o dominio autenticado da aplicacao
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified', 'haspermission:access.admin'])->group(function () {
     Route::controller(Authentication::class)->group(function () {
         Route::post('logout', 'logout');
     });

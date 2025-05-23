@@ -60,4 +60,4 @@
         </div>
     </div>
 </div>
-<script src="{{ asset('js/client.js') }}"></script>
+<script src="{{ asset('js/agents.js') }}"></script>
