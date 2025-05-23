@@ -1,10 +1,10 @@
 <?php
 
-namespace App\AccessControl\Providers;
+namespace App\Logger\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class AccessControlServiceProvider extends ServiceProvider
+class LoggerServiceProvider extends ServiceProvider
 {
 	public function register(): void
 	{

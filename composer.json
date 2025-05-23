@@ -3,7 +3,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -26,13 +29,20 @@
             "App\\": "app/",
             "App\\AccessControl\\": "app/access-control/src",
             "App\\Application\\": "app/application/src",
+            "App\\Logger\\": "app/logger/src",
+            "App\\AccessControl\\Database\\Factories\\": "app/access-control/database/factories",
+            "App\\Application\\Database\\Factories\\": "app/application/database/factories",
+            "App\\AccessControl\\Database\\Seeders\\": "app/access-control/database/seeders",
+            "App\\Application\\Database\\Seeders\\": "app/application/database/seeders",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Tests\\AccessControl\\": "tests/AccessControl",
+            "Tests\\Application\\": "tests/Application"
         }
     },
     "scripts": {

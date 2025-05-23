@@ -36,10 +36,34 @@ return [
         'roles' => ['manager'],
     ],
     [
-        'label' => 'Planos',
-        'route' => '/plans',
+        'label' => 'Contratos',
+        'route' => '/contratos',
+        'icon' => 'heroicon-document-text',
+        'roles' => ['manager'],
+    ],
+    [
+        'label' => 'Faturas',
+        'route' => '/faturas',
+        'icon' => 'heroicon-tiket',
+        'roles' => ['manager'],
+    ],
+    [
+        'label' => 'Planos de cobrança',
+        'route' => '/billing-plans',
+        'icon' => 'heroicon-currency',
+        'roles' => ['manager'],
+    ],
+    [
+        'label' => 'Planos de serviços',
+        'route' => '/service-plans',
         'icon' => 'heroicon-tag',
         'roles' => ['manager'],
+    ],
+    [
+        'label' => 'Clientes',
+        'route' => '/clients',
+        'icon' => 'heroicon-users',
+        'roles' => ['agent'],
     ],
     [
         'label' => 'Agentes',
@@ -52,11 +76,5 @@ return [
         'route' => '/companies',
         'icon' => 'heroicon-modern-house',
         'roles' => ['client'],
-    ],
-    [
-        'label' => 'Sócios',
-        'route' => '/partners',
-        'icon' => 'heroicon-users',
-        'roles' => ['client'],
-    ],
+    ]
 ];

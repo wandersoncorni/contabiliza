@@ -9,7 +9,7 @@ use App\Application\Http\Controllers\Client;
 use App\Application\Http\Controllers\Consultant;
 use App\Application\Http\Controllers\Licensed;
 use App\Application\Http\Controllers\Portfolio;
-use App\Application\Http\Controllers\ServicePlan;
+use App\Application\Http\Controllers\Company;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
@@ -30,7 +30,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('clients', [Client::class, 'list']);
 
         Route::get('consultants', [Consultant::class, 'list']);
+    });
 
-        Route::get('services-plans', [ServicePlan::class, 'list']);
+    Route::middleware(['haspermission:access.client'])->group(function () {
+        Route::get('companies', [Company::class, 'list']);
     });
 });
