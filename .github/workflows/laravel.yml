@@ -11,6 +11,8 @@ on:
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
 
     steps:
       - name: Checkout do código
@@ -30,9 +32,9 @@ jobs:
         run: touch ./database/database.sqlite
           
       - name: Rodar migrações do modulo AccessControl
-        run: php artisan migrate --path=app/AccessControl/Database/Migrations --env=testing
+        run: php artisan migrate --path=app/access-control/database/migrations --env=testing
       - name: Rodar migrações do modulo Application
-        run: php artisan migrate --path=app/Application/Database/Migrations --env=testing
+        run: php artisan migrate --path=app/application/database/migrations --env=testing
       - name: Rodar o seed
         run: php artisan db:seed
       - name: Rodar os testes
