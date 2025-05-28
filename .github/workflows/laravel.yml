@@ -35,6 +35,8 @@ jobs:
         run: php artisan migrate --path=app/access-control/database/migrations --env=testing
       - name: Rodar migrações do modulo Application
         run: php artisan migrate --path=app/application/database/migrations --env=testing
+      - name: Rodar migrações do modulo Logger
+        run: php artisan migrate --path=app/logger/database/migrations --env=testing
       - name: Rodar o seed
         run: php artisan db:seed
       - name: Rodar os testes
