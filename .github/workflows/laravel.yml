@@ -27,7 +27,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
       
       - name: Configurar o ambiente
-        run: composer update
+        run: composer dump-autoload
 
       - name: Cria a base de dados sqlite
         run: touch ./database/database.sqlite
