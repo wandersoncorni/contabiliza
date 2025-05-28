@@ -26,6 +26,9 @@ jobs:
       - name: Instalar dependências do Laravel
         run: composer install --prefer-dist --no-progress
 
+      - name: Instala o Pest
+        run: composer require pestphp/pest --dev -W
+
       - name: Cria a base de dados sqlite
         run: touch ./database/database.sqlite
           
