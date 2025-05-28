@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         $modules = glob(app_path() . '/*', GLOB_ONLYDIR);
         foreach ($modules as $module) {
-            if (is_dir("$module/Database/Migrations")) {
+            if (is_dir("$module/Database/Migrations")) {dump(is_dir("$module/Database/Migrations"));
                 $this->loadMigrationsFrom("$module/Database/Migrations");
             }
         }
