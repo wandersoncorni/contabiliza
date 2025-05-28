@@ -25,12 +25,15 @@ jobs:
 
       - name: Instalar dependências do Laravel
         run: composer install --prefer-dist --no-progress
-      
-      - name: Configurar o ambiente
-        run: composer dump-autoload
 
       - name: Cria a base de dados sqlite
         run: touch ./database/database.sqlite
           
-      - name: Rodar migrações
-        run: php artisan migrate:refresh --env=testing --seed && php artisan test --env=testing
+      - name: Rodar migrações do modulo AccessControl
+        run: php artisan migrate --path=app/AccessControl/Database/Migrations --env=testing
+      - name: Rodar migrações do modulo Application
+        run: php artisan migrate --path=app/Application/Database/Migrations --env=testing
+      - name: Rodar o seed
+        run: php artisan db:seed
+      - name: Rodar os testes
+        run: php artisan test --env=testing
