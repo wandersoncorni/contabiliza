@@ -22,6 +22,7 @@
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "pestphp/pest": "^3.8",
         "phpunit/phpunit": "^11.5.3"
     },
     "autoload": {
@@ -41,8 +42,8 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/",
-            "Tests\\AccessControl\\": "tests/AccessControl",
-            "Tests\\Application\\": "tests/Application"
+            "App\\AccessControl\\Tests\\": "app/access-control/tests",
+            "App\\Application\\Tests\\": "app/application/tests"
         }
     },
     "scripts": {

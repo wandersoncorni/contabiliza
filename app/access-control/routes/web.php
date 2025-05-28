@@ -16,7 +16,9 @@ Route::get('login', function () {
 /*************************************************************
  * Usuario
  *************************************************************/
-Route::get('register', function () {
+// Rota para o registro de usuario. O pid é i identificador do plano de serviço escolhido
+Route::get('register/{pid?}', function () {
+    session('pid', request('pid'));
     return view('access-control::register');
 })->name('register.view');
 

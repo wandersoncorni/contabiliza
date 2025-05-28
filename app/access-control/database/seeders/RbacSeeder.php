@@ -2,14 +2,11 @@
 
 namespace App\AccessControl\Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\AccessControl\Models\User;
 use App\AccessControl\Models\Role;
 use App\AccessControl\Models\Action;
 use App\AccessControl\Models\Asset;
 use App\AccessControl\Models\Permission;
-use App\AccessControl\Models\UserRole;
 
 class RbacSeeder extends Seeder
 {
@@ -76,11 +73,11 @@ class RbacSeeder extends Seeder
             ['name' => 'Mudar estado do perfil cliente', 'label' => 'change_state_client'], // id 12
             ['name' => 'Mudar estado do perfil agent', 'label' => 'change_state_agent'], // id 13
             
-            ['name' => 'Rota para usuarios', 'label' => '/users'], // id 14
-            ['name' => 'Rota para clientes', 'label' => '/clients'], // id 15
-            ['name' => 'Rota para agentes', 'label' => '/agents'], // id 16
-            ['name' => 'Rota para licenciados', 'label' => '/licensed'], // id 17
-            ['name' => 'Rota para consultores', 'label' => '/consultants'], // id 18
+            ['name' => 'Rota para usuarios', 'label' => 'users_route'], // id 14
+            ['name' => 'Rota para clientes', 'label' => 'clients_route'], // id 15
+            ['name' => 'Rota para agentes', 'label' => 'agents_route'], // id 16
+            ['name' => 'Rota para licenciados', 'label' => 'licensed_route'], // id 17
+            ['name' => 'Rota para consultores', 'label' => 'consultants_route'], // id 18
         ];
         foreach ($assets as $asset) {
             Asset::factory()->create($asset);
@@ -131,7 +128,7 @@ class RbacSeeder extends Seeder
             // Id 9
             [
                 'name' => 'Acessar',
-                'label' => 'acccess'
+                'label' => 'access'
             ]
         ];
         foreach ($actions as $action) {
@@ -185,7 +182,7 @@ class RbacSeeder extends Seeder
             ['role_id' => 5, 'action_id' => 5, 'asset_id' => 6], // O cliente pode excluir um agente
 
             // Acesso as rotas e aos itens de menu
-            ['role_id' => 3, 'action_id' => 3, 'asset_id' => 14], // O gerente e o admin podem acessar a rota para usuarios
+            ['role_id' => 4, 'action_id' => 9, 'asset_id' => 14], // O consultor e o admin podem acessar a rota para usuarios
             ['role_id' => 4, 'action_id' => 3, 'asset_id' => 15], // O consultor e seus superiores podem acessar rota para clientes
             ['role_id' => 5, 'action_id' => 3, 'asset_id' => 16], // O cliente e seus superiores podem acessar rota para agentes
             ['role_id' => 2, 'action_id' => 9, 'asset_id' => 17], // O admin acessar rota para licenciados

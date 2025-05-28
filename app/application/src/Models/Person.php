@@ -19,11 +19,11 @@ class Person extends Model
      * Atributos que podem ser atribuídos em massa.
      */
     protected $fillable = [
-        'user_id',
+        'id_user',
         'name',
         'phone',
         'roles',
-        'licensed_id',
+        'id_licensed',
     ];
     /**
      * Os atributos que devem ser convertidos para tipos nativos.
@@ -38,21 +38,21 @@ class Person extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class,'user_id', 'id');
+        return $this->belongsTo(User::class,'id_user', 'id');
     }
     /**
      * Lista os agentes de um cliente
      */
     public function agents(): hasMany
     {
-        return $this->hasMany(Person::class, 'client_id');
+        return $this->hasMany(Person::class, 'id_client');
     }
     /**
      * Lista o cliente ao qual o agente pertence
      */
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Person::class, 'id', 'client_id');
+        return $this->belongsTo(Person::class, 'id', 'id_client');
     }
 
     public function licensed(): BelongsTo

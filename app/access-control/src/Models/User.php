@@ -77,7 +77,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
      */
     public function person(): BelongsTo
     {
-        return $this->belongsTo(Person::class,'id','user_id');
+        return $this->belongsTo(Person::class,'id','id_user');
     }
     /**
      * Confirma se o usuario possui um perfil

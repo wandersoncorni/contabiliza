@@ -14,9 +14,7 @@
     <link rel="icon" href="/favicon.png" type="favico" />
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="theme-color" content="#ffffff">
-
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    
     <link href="{{ asset('/vendor/sweetalert2/dist/sweetalert2.min.css') }}" rel="stylesheet">
     @stack('styles_href')
     <link type="text/css" href="{{ asset('css/volt.css') }}" rel="stylesheet">

@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\DB;
 class Client
 {public function list(Request $request, $id = null) : JsonResponse
     {
-        $lid = Auth::user()->person->licensed_id ?? 0;
+        $lid = Auth::user()->person->id_licensed ?? 0;
         if($id != null && Auth::user()->hasRole('admin')) {
             $lid = $id;
         }
         return response()->json(User::select(['id', 'email', 'created_at', 'active', DB::raw('created_at IS NOT NULL as verified')])->where(['active' => 1])->whereHas('person', function ($query)use($lid) {
-            $query->where('licensed_id', $lid)->whereJsonContains('roles', 'client');
-        })->with('person:user_id,name')->get(), 200);
+            $query->where('id_licensed', $lid)->whereJsonContains('roles', 'client');
+        })->with('person:id_user,name')->get(), 200);
     }
 }

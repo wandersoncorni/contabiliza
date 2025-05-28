@@ -28,7 +28,7 @@ class AccountTest extends TestCase
         $user = User::where('email', 'teste@example.com')->first();
         $this->assertNotNull($user);
 
-        $person = Person::where('user_id', $user->id)->first();
+        $person = Person::where('id_user', $user->id)->first();
         $this->assertNotNull($person);
 
         $log = Log::where('message', 'Usuário criado com sucesso.')->first();
@@ -97,7 +97,7 @@ class AccountTest extends TestCase
         $response->assertStatus(200);
 
         $this->assertNull(User::find($uid));
-        $this->assertNull(Person::where('user_id', $uid)->first());
+        $this->assertNull(Person::where('id_user', $uid)->first());
         $this->assertNotNull(Log::where('message', 'Exclusão da conta pelo usuário')->first());
     }
 }

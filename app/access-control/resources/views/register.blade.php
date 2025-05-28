@@ -114,7 +114,7 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="concorde_termo" required>
                                     <label class="form-check-label fw-normal mb-0" for="concorde_termo">
-                                        Eu concordo com <a href="{{asset('docs/termos_e_condicoes.pdf')}}" class="text-info" style="text-decoration: underline;"><b>termos e condições</i></b></a>
+                                        Eu concordo com <a href="{{asset('docs/termos_e_condicoes.pdf')}}" target="_blank" class="text-info" style="text-decoration: underline;"><b>termos e condições</i></b></a>
                                     </label>
                                 </div>
                             </div>

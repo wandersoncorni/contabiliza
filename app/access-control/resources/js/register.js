@@ -64,7 +64,18 @@ document.querySelector("#register-form").addEventListener("submit", function (e)
 
     if (isValid) {
         const formData = new FormData(document.querySelector("#register-form"));
-        formData.append(document.createElement('input').name = '_token', getCsrfToken());
+        
+        fetch('/csrf-token', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('input[name="_token"]').value = data.token;
+        });
+    
         fetch('/api/v1/account', {
             method: 'POST',
             body: formData,

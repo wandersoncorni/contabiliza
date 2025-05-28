@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class HasPermission
 {
-    public function handle(Request $request, Closure $next, $action = null): Response
+    public function handle(Request $request, Closure $next, $actions = null): Response
     {
         $user = Auth::user();
 
@@ -17,18 +17,20 @@ class HasPermission
             return response()->json(['error' => 'Usuário não autenticado.'], 401);
         }
 
-        if (is_null($action)) {
+        if (is_null($actions)) {
             return response()->json(['error' => 'Permissão não definida'], 403);
         }
 
-        // Obtém a role do usuário
+        // Obtém o perfil do usuário
         $roles = $user->person->roles ?? ['guest'];
+        $actions = explode('|', $actions);
 
-        if($user->hasPermission($action)){
-            return $next($request);
+        foreach ($actions as $action) {
+            if ($user->hasPermission($action)) {
+                return $next($request);
+            }
         }
 
         return response()->json(['error' => 'Permissão negada.'], 403);
-        
     }
 }

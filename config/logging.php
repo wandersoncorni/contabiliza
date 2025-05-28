@@ -129,7 +129,7 @@ return [
 
         'database' => [
             'driver' => 'custom',
-            'via' => \App\Logger\DatabaseLogger::class,
+            'via' => \App\Logger\Logging\DatabaseLogger::class,
             'level' => env('LOG_LEVEL', 'debug'),
         ],
     ],

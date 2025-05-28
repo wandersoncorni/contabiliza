@@ -5,7 +5,8 @@ namespace App\AccessControl\Http\Controllers;
 use App\AccessControl\Models\User as UserModel;
 use App\AccessControl\Mail\UserDeletedMail;
 use App\AccessControl\Http\Requests\RegisterValidationRequest;
-use App\AccessControl\Mail\UserCreatedAdminNotification;
+use App\AccessControl\Notifications\NewClient;
+use App\Application\Models\Person;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +58,8 @@ class Account
             $user->active = true;
             $user->save();
             \App\Application\Models\Person::create([
-                'user_id' => $user->id,
+                'id_user' => $user->id,
+                'id_licensed' => '1',
                 'name' => $formData['name'],
                 'roles' => ['client'],
                 'created_at' => now(),
@@ -71,7 +73,9 @@ class Account
         // Disparar evento de verificação de email
         event(new Registered($user));
 
-        Mail::to(config('mail.admin_email'))->send(new UserCreatedAdminNotification($user));
+        UserModel::whereHas('person', function ($query) {
+            $query->where('roles', 'LIKE', '%manager%');
+        })->each(fn ($admin) => $admin->notify(new NewClient()));
 
         Log::channel('database')->info('Usuário criado com sucesso.', ['user' => $user->email, 'created_by' => 'system']);
 
@@ -118,7 +122,7 @@ class Account
         request()->merge(['id' => Auth::user()->id]);// Adiciona o ID do usuario a requisicao para acionar o observer
         if (Auth::user()->delete()) {
             Mail::to(Auth::user()->email)->send(new UserDeletedMail(Auth::user()));
-            Log::channel('database')->info('Exclusão da conta pelo usuário', ['user_id' => Auth::user()->id, 'email' => Auth::user()->email]);
+            Log::channel('database')->info('Exclusão da conta pelo usuário', ['id_user' => Auth::user()->id, 'email' => Auth::user()->email]);
             session()->flush();
             session()->regenerate();
             return response()->json(['message' => 'Conta deletada com sucesso!'], 200);

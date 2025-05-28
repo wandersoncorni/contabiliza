@@ -23,7 +23,7 @@ export function init() {
                 });
         }
 
-        if (!$('#licensed_id option').length) {
+        if (!$('#id_licensed option').length) {
             fetch('/api/v1/licensed', {
                 method: 'GET',
                 headers: {
@@ -35,7 +35,7 @@ export function init() {
                 .then(json => {
                     const licensed = json.map(licensed => `<option value="${licensed.id}">${licensed.name}</option>`);
                     licensed.unshift('<option selected >Selecione um licenciado</option>');
-                    $('#licensed_id').html(licensed.join(''));
+                    $('#id_licensed').html(licensed.join(''));
                 });
         }
     });

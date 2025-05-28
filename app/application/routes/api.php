@@ -9,6 +9,7 @@ use App\Application\Http\Controllers\Client;
 use App\Application\Http\Controllers\Consultant;
 use App\Application\Http\Controllers\Portfolio;
 use App\Application\Http\Controllers\Company;
+use App\Application\Http\Controllers\Plano;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
@@ -34,5 +35,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::middleware(['haspermission:access.client'])->group(function () {
         Route::get('companies', [Company::class, 'list']);
         Route::get('agents', [Agent::class, 'list']);
+    });
+
+    Route::middleware(['haspermission:access.client'])->group(function () {});
+
+    Route::controller(Plano::class)->group(function () {
+        Route::get('plans', 'list');
     });
 });

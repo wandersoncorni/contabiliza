@@ -116,8 +116,8 @@
                     </div>
                     @if(Auth::user()->hasRole('admin'))
                     <div class="mb-3">
-                        <label for="licensed_id" class="form-label">Licenciado</label>
-                        <select class="form-select" id="licensed_id" name="licensed_id"></select>
+                        <label for="id_licensed" class="form-label">Licenciado</label>
+                        <select class="form-select" id="id_licensed" name="id_licensed"></select>
                     </div>
                     @endif
                 </form>

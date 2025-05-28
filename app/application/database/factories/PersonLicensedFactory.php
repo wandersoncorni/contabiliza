@@ -20,7 +20,7 @@ class PersonLicensedFactory extends Factory
     {
         return [
             'person_id' => Person::Factory(),
-            'licensed_id' => Licensed::Factory(),
+            'id_licensed' => Licensed::Factory(),
         ];
     }
 }

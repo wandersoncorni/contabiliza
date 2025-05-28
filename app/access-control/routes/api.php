@@ -36,39 +36,52 @@ Route::get('/email/verify', function (Request $request) {
     return response()->json([], 200);
 })->name('verification.verify');
 
-// Rotas para o dominio autenticado da aplicacao
-Route::middleware(['auth:sanctum', 'verified', 'haspermission:access.admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    Route::controller(Application::class)->group(function () {
+        Route::get('painel', 'listarPainel');
+    });
     Route::controller(Authentication::class)->group(function () {
         Route::post('logout', 'logout');
     });
-
-    Route::controller(User::class)->group(function () {
-        Route::get('users', 'list');
-        Route::get('user', 'listUser');
-        Route::post('user', 'create');
-        Route::put('user/{id?}', 'update');
-        Route::patch('user', 'changeState'); //Mudar active e profile
-        Route::delete('user/{id?}', 'delete');
-
-        Route::post('register', 'create');
-        Route::get('password-reset/{token}', 'passwordReset')->name('password.reset');
-        Route::get('email-validate/{id}/{token}', 'validateEmail')->name('email.validate');
-        Route::post('email/resend', 'emailResend');
-    });
-
     Route::controller(Account::class)->group(function () {
         Route::get('account', fn () => view('application::account'));
         Route::get('account/list', 'list');
         Route::put('account', 'update');
         Route::delete('account', 'delete');
     });
+});
 
-    Route::controller(Application::class)->group(function () {
-        Route::get('painel', 'listarPainel');
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+    /*
+     * Os perfis admin, manager, consultant e client poderao criar uuarios em
+     * decorrencia da necessidade de cada um.
+     */
+    Route::controller(User::class)->group(function () {
+        Route::get('users', 'list');        
+        Route::post('user', 'create');        
+        Route::delete('user/{id?}', 'delete');
     });
+    /*
+     * Somente os perfis admin, manager e consutant poderao atualizar usuarios, sendo
+     * que o admin podera atualizar todos os usuarios, enquanto o manager e o consultant
+     * poderao atualizar apenas os usuarios que forem criados no seu dominio de permissao de uso.
+     */
+    Route::controller(User::class)->group(function () {        
+        Route::get('user', 'listUser');
+        Route::put('user/{id?}', 'update');
+        Route::patch('user', 'changeState'); //Mudar active e profile
 
+        Route::get('password-reset/{token}', 'passwordReset')->name('password.reset');
+        Route::get('email-validate/{id}/{token}', 'validateEmail')->name('email.validate');
+        Route::post('email/resend', 'emailResend');
+        
+        Route::get('roles', [Role::class, 'list'])->name('roles.list');
+    })->middleware(['haspermission:access.users_route']);
+});
+
+// Rotas para o dominio autenticado da aplicacao
+Route::middleware(['auth:sanctum', 'verified', 'haspermission:access.admin'])->group(function () {
     Route::controller(Role::class)->group(function () {
-        Route::get('roles', 'list');
         Route::get('role', 'listRole');
         Route::post('role', 'create');
         Route::put('role/{id?}', 'update');

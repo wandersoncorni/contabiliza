@@ -3,8 +3,6 @@
 namespace App\AccessControl\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use App\AccessControl\Models\User;
 
 /**
@@ -12,12 +10,6 @@ use App\AccessControl\Models\User;
  */
 class UserFactory extends Factory
 {
-    protected $model = User::class;
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
     /**
      * Define the model's default state.
      *
@@ -42,5 +34,10 @@ class UserFactory extends Factory
         return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function newModel(array $attributes = [])
+    {
+        return new User($attributes);
     }
 }

@@ -51,8 +51,7 @@ export function init() {
         fetch('/api/v1/logout', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'XSRF-TOKEN': sessionStorage.getItem('XSRF-TOKEN')
+                'Content-Type': 'application/json'
             },
             credentials: 'include'
         })

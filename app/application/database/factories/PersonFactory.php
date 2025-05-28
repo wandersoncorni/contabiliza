@@ -25,7 +25,7 @@ class PersonFactory extends Factory
         $roles = array_merge($roles, ['client', 'client']);
 
         return [
-            'user_id' => User::Factory(),
+            'id_user' => User::Factory(),
             'name' => $this->faker->name(),
             'phone' => $this->faker->phoneNumber(),
             'roles' => User::Factory() ?? '["'.$this->faker->randomElement($roles).'"]',

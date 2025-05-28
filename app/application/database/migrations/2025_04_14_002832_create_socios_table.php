@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -33,6 +34,13 @@ return new class extends Migration
 
         $table->timestamps();
     });
+    // Tabela de relacionamento entre sócios e empresas
+    Schema::create('socio_empresa', function (Blueprint $table) {
+        $table->foreignId('id_empresa')->constrained('empresas', 'id')->cascadeOnDelete();
+        $table->foreignId('id_socio')->constrained('socios', 'id')->cascadeOnDelete();
+        $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
+        $table->timestamp('deleted_at')->nullable();
+    });
 }
 
 
@@ -40,7 +48,8 @@ return new class extends Migration
      * Reverse the migrations.
      */
     public function down(): void
-    {
+    {        
+        Schema::dropIfExists('socio_empresa');
         Schema::dropIfExists('socios');
     }
 };
