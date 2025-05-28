@@ -38,4 +38,4 @@ jobs:
       - name: Rodar o seed
         run: php artisan db:seed
       - name: Rodar os testes
-        run: php artisan test --env=testing
+        run: ./vendor/bin/pest app/access-control/tests app/application/tests --parallel --processes=4 --env=testing
