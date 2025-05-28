@@ -25,6 +25,9 @@ jobs:
 
       - name: Instalar dependências do Laravel
         run: composer install --prefer-dist --no-progress
+      
+      - name: Configurar o ambiente
+        run: composer update
 
       - name: Cria a base de dados sqlite
         run: touch ./database/database.sqlite
