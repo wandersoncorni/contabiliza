@@ -36,10 +36,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('companies', [Company::class, 'list']);
         Route::get('agents', [Agent::class, 'list']);
     });
+});
 
-    Route::middleware(['haspermission:access.client'])->group(function () {});
-
-    Route::controller(Plano::class)->group(function () {
-        Route::get('plans', 'list');
-    });
+Route::controller(Plano::class)->group(function () {
+    Route::get('plans', 'list');
 });

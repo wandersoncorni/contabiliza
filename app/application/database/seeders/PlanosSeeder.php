@@ -3,10 +3,10 @@
 namespace App\Application\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Application\Models\Plano;
 use App\Application\Models\Servico;
 use App\Application\Models\PlanoServicoCategoria;
 use App\Application\Models\CategoriaServico;
+use App\Application\Models\PlanoServico;
 
 class PlanosSeeder extends Seeder
 {
@@ -21,10 +21,11 @@ class PlanosSeeder extends Seeder
             'Ouro',
         ];
         foreach ($planos as $plano) {
-            Plano::factory()->create([
+            PlanoServico::factory()->create([
                 'nome' => $plano,
                 'descricao' => "Plano $plano",
-                'valor' => rand(100, 1000),
+                'valor_mensal' => rand(300, 500),
+                'valor_anual' => rand(100, 300),
             ]);
         }
 
@@ -67,9 +68,9 @@ class PlanosSeeder extends Seeder
         foreach($planosServicosCategorias as $psc){
             foreach($psc as $pscItem){
                 PlanoServicoCategoria::factory()->create([
-                    'id_planos_servicos' => $pscItem[0],
-                    'id_categoria' => $pscItem[1],
-                    'id_servicos' => $pscItem[2],
+                    'plano_servico_id' => $pscItem[0],
+                    'categoria_servico_id' => $pscItem[1],
+                    'servico_id' => $pscItem[2],
                 ]);
             }
         }

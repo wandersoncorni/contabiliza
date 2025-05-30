@@ -215,7 +215,7 @@ it('excluir um usuário agente como cliente', function(){
     })->first();
     
     $agente = User::whereHas('person',function($query)use($cliente){
-        $query->where('roles', 'LIKE', '%agent%')->where('id_client', '=', $cliente->person->id);
+        $query->where('roles', 'LIKE', '%agent%')->where('client_id', '=', $cliente->person->id);
     })->first();
     
     $this->postJson('/api/v1/login', [
@@ -236,7 +236,7 @@ it('excluir um usuário cliente como gerente', function(){
     })->first();
 
     $user = User::whereHas('person',function($query){
-        $query->where([['roles', 'LIKE', '%client%'], ['id_licensed', '=', 1]]);
+        $query->where([['roles', 'LIKE', '%client%'], ['licensed_id', '=', 1]]);
     })->first();
     
     $resp = $this->postJson('/api/v1/login', [

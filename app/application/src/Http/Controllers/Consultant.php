@@ -12,7 +12,7 @@ class Consultant
 {
     public function list(Request $request, $id = null): JsonResponse
     {
-        $lid = Auth::user()->person->id_licensed ?? 0;
+        $lid = Auth::user()->person->licensed_id ?? 0;
         if ($id != null && Auth::user()->hasRole('admin')) {
             $lid = $id;
         }
@@ -25,7 +25,7 @@ class Consultant
         ])
             ->where(['active' => 1])
             ->whereHas('person', function ($query) use ($lid) {
-                $query->where('id_licensed', $lid)->whereJsonContains('roles', 'consultant');
-            })->with('person:id_user,name')->get(), 200);
+                $query->where('licensed_id', $lid)->whereJsonContains('roles', 'consultant');
+            })->with('person:user_id,name')->get(), 200);
     }
 }

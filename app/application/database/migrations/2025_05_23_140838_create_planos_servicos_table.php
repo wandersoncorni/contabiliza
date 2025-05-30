@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nome', 100);
             $table->string('descricao', 200)->nullable()->default(null);
-            $table->string('valor', 10);
+            $table->string('valor_mensal', 10);
+            $table->string('valor_anual', 10);
             $table->boolean('ativo', 1)->default(true);
         });
 
@@ -33,9 +34,9 @@ return new class extends Migration
         });
         // Relacionamneto entre planos de serviços e serviços
         Schema::create('plano_servico_categoria', function (Blueprint $table) {
-            $table->foreignId('id_planos_servicos')->constrained('planos_servicos')->onDelete('cascade');
-            $table->foreignId('id_categoria')->constrained('categorias_servicos')->onDelete('cascade');
-            $table->foreignId('id_servicos')->constrained('servicos')->onDelete('cascade');
+            $table->foreignId('plano_servico_id')->constrained('planos_servicos')->onDelete('cascade');
+            $table->foreignId('categoria_servico_id')->constrained('categorias_servicos')->onDelete('cascade');
+            $table->foreignId('servico_id')->constrained('servicos')->onDelete('cascade');
             $table->boolean('ativo', 1)->default(true);
             $table->timestamp('created_at')->useCurrent();
         });

@@ -4,6 +4,8 @@ namespace App\Application\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Application\Models\Servico;
+use App\Application\Models\PlanoServicoCategoria;
 
 class CategoriaServico extends Model
 {
@@ -18,8 +20,8 @@ class CategoriaServico extends Model
         'nome',
     ];
 
-    public function servico()
+    public function servicos()
     {
-        return $this->hasMany(Servico::class);
+        return $this->hasManyThrough(Servico::class, PlanoServicoCategoria::class);
     }
 }

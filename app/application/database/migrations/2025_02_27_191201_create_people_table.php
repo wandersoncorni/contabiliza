@@ -16,14 +16,14 @@ return new class extends Migration
          * Cria a tabela pessoas.
          * Caracteristicas:
          * - Eh um complemento a tabela de usuários.
-         * - A chave estrangeira id_user referencia a tabela de usuários.
+         * - A chave estrangeira user_id referencia a tabela de usuários.
          * - O campo roles indica o perfil da pessoa.
          */
         Schema::create('people', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
-            $table->foreignId('id_client')->nullable()->constrained('people', 'id')->cascadeOnDelete();
-            $table->foreignId('id_licensed')->nullable()->constrained('licensed', 'id')->onDelete('cascade'); 
+            $table->foreignId('user_id')->constrained('users', 'id')->onDelete('cascade');
+            $table->foreignId('client_id')->nullable()->constrained('people', 'id')->cascadeOnDelete();
+            $table->foreignId('licensed_id')->nullable()->constrained('licensed', 'id')->onDelete('cascade'); 
             $table->string('name')->nullable();
             $table->string('phone', 20)->nullable();
             $table->string('photo', 20)->nullable();

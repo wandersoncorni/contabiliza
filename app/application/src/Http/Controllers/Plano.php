@@ -4,18 +4,14 @@ namespace App\Application\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Application\Models\Plano AS PlanoModel;
+use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoServico;
 
 class Plano
 {
     public function list() : JsonResponse
     {
-        return response()->json(PlanoModel::where('ativo', true)
-            ->whereHas('planoCategoria', function ($query) {
-                $query->where('ativo', true);
-            })
-            ->whereHas('planoCategoria.servico', function ($query) {
-                $query->where('ativo', true);
-            })->get());
+        $planos = PlanoServico::with(['categoriasServicos.categoria:id,nome', 'categoriasServicos.servico:id,nome'])->get();
+        return response()->json($planos);
     }
 }

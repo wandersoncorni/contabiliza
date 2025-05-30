@@ -17,9 +17,9 @@ class PlanoServicoCategoriaFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_planos_servicos' => 1,
-            'id_servicos' => 1,
-            'id_categoria' => 1,
+            'plano_servico_id' => 1,
+            'categoria_servico_id' => 1,
+            'servico_id' => 1,
         ];
     }
 }

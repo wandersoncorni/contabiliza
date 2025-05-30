@@ -34,10 +34,10 @@ class DatabaseSeeder extends Seeder
         ]);
         Person::factory()->create([
             'name' => "Admin",
-            'id_client' => null,
-            'id_user' => $admin->id,
+            'client_id' => null,
+            'user_id' => $admin->id,
             'roles' => ["admin"],
-            'id_licensed' => null,
+            'licensed_id' => null,
         ]);
         foreach ([$licensed->id, $licensed2->id] as $lid) {
             $manager = User::factory()->create([
@@ -48,10 +48,10 @@ class DatabaseSeeder extends Seeder
             ]);
             Person::factory()->create([
                 'name' => 'Manager ' . $lid,
-                'id_client' => null,
-                'id_user' => $manager->id,
+                'client_id' => null,
+                'user_id' => $manager->id,
                 'roles' => ["manager"],
-                'id_licensed' => $lid
+                'licensed_id' => $lid
             ]);
 
             $consultant = User::factory()->create([
@@ -62,10 +62,10 @@ class DatabaseSeeder extends Seeder
             ]);
             Person::factory()->create([
                 'name' => 'Consultant ' . $lid,
-                'id_client' => null,
-                'id_user' => $consultant->id,
+                'client_id' => null,
+                'user_id' => $consultant->id,
                 'roles' => ["consultant"],
-                'id_licensed' => $lid,
+                'licensed_id' => $lid,
             ]);
         }
 
@@ -77,10 +77,10 @@ class DatabaseSeeder extends Seeder
         ]);
         Person::factory()->create([
             'name' => 'Client',
-            'id_client' => null,
-            'id_user' => $client->id,
+            'client_id' => null,
+            'user_id' => $client->id,
             'roles' => ["client"],
-            'id_licensed' => $licensed->id,
+            'licensed_id' => $licensed->id,
         ]);
         $agent = User::factory()->create([
             'email' => 'agent@contabiliza.com.br',
@@ -88,23 +88,23 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
             'active' => 1
         ]);
-        $person = Person::factory()->create(['id_user' => $agent->id, 'roles' => ["agent"], 'id_licensed' => $licensed->id, 'id_client' => $client->id]);
+        $person = Person::factory()->create(['user_id' => $agent->id, 'roles' => ["agent"], 'licensed_id' => $licensed->id, 'client_id' => $client->id]);
 
         // Cria usuarios consultores
         $consultants = User::factory(5)->create();
         foreach ($consultants as $key => $user) {
-            $person = Person::factory()->create(['id_user' => $user->id, 'roles' => ['consultant'], 'id_licensed' => $licensed->id]);
+            $person = Person::factory()->create(['user_id' => $user->id, 'roles' => ['consultant'], 'licensed_id' => $licensed->id]);
         }
 
         // Cria usuarios clientes
         $clients = User::factory(5)->create();
         foreach ($clients as $key => $user) {
-            $person = Person::factory()->create(['id_user' => $user->id, 'roles' => ["client"], 'id_licensed' => $licensed->id]);
+            $person = Person::factory()->create(['user_id' => $user->id, 'roles' => ["client"], 'licensed_id' => $licensed->id]);
         }
         // Cria usuarios agentes
         $agents = User::factory(5)->create();
         foreach ($agents as $key => $user) {
-            $person = Person::factory()->create(['id_user' => $user->id, 'roles' => ["agent"], 'id_licensed' => $licensed->id, 'id_client' => $clients[$key]->id]);
+            $person = Person::factory()->create(['user_id' => $user->id, 'roles' => ["agent"], 'licensed_id' => $licensed->id, 'client_id' => $clients[$key]->id]);
         }
 
         Empresa::factory(3)->create();

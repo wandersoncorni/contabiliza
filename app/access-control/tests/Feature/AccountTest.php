@@ -22,7 +22,7 @@ it('Cria uma conta', function () {
     $user = User::where('email', 'teste@example.com')->first();
     $this->assertNotNull($user);
 
-    $person = Person::where('id_user', $user->id)->first();
+    $person = Person::where('user_id', $user->id)->first();
     $this->assertNotNull($person);
     // Verifica se o log foi criado
     expect(Log::where('message','Usuário criado com sucesso.')->first())->not()->toBeNull();
@@ -88,7 +88,7 @@ it('excluir a conta', function(){
     $response->assertStatus(200);
     // Verifica se a conta foi realmente excluida
     expect(User::where('id', $uid)->first())->toBeNull();
-    expect(Person::where('id_user', $uid)->first())->toBeNull();
+    expect(Person::where('user_id', $uid)->first())->toBeNull();
     // Verifica se o log foi criado
     expect(Log::where('message','Exclusão da conta pelo usuário')->first())->not()->toBeNull();
 });

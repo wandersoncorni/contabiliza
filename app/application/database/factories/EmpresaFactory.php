@@ -19,7 +19,7 @@ class EmpresaFactory extends Factory
     {
         $faker = Faker::create('pt_BR');
         return [
-            'id_cliente' => 1,
+            'client_ide' => 1,
             'nome' => $faker->company,
             'cnpj' => $this->generateFakeCnpj()
         ];

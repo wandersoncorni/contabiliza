@@ -33,11 +33,11 @@ class User
         // Se o usuario nao for admin, ele so pode ver os usuarios da sua empresa licenciada para uso da aplicacao
         if(!Auth::user()->hasRole('admin')){
             $query->whereHas('person', function ($query) {
-                $query->where('id_licensed', Auth::user()->person->id_licensed);
+                $query->where('licensed_id', Auth::user()->person->licensed_id);
             });
         }
         $query->with([
-            'person:id,id_user,id_licensed,name,roles,photo',
+            'person:id,user_id,licensed_id,name,roles,photo',
             'person.licensed:id,name',
             'person.client',
         ]);
@@ -65,7 +65,7 @@ class User
         $formData = $req->all();
 
         // Verifica se o perfil selecionado eh de agente e se foi informado o id do cliente
-        if ($formData['role'] == 'agent' && (!isset($formData['id_client']) || empty($formData['id_client']))) {
+        if ($formData['role'] == 'agent' && (!isset($formData['client_id']) || empty($formData['client_id']))) {
             return response()->json(['error' => 'Informe o cliente para o perfil de agente.'], 400);
         }
         // Valida se o usuario logado tem permissão para criar um usuario com o perfil selecionado
@@ -83,11 +83,11 @@ class User
         }
         // Cria a pessoa relacionada ao usuario e associa a um cliente ou agente se for o caso
         try {
-            $formData['id_user'] = $user->id;
+            $formData['user_id'] = $user->id;
             $formData['roles'] = [$formData['role']];
-            $formData['id_licensed'] = Auth::user()->person->id_licensed; // Pega o licenciado do usuario logado
+            $formData['licensed_id'] = Auth::user()->person->licensed_id; // Pega o licenciado do usuario logado
             if ($formData['role'] == 'agent') {
-                $formData['id_client'] = $formData['id_client'] ?? null; // Se for agente, pega o cliente
+                $formData['client_id'] = $formData['client_id'] ?? null; // Se for agente, pega o cliente
             } 
             \App\Application\Models\Person::create($formData);
         } catch (\Exception $e) {
@@ -167,7 +167,7 @@ class User
         // Atualiza o usuário com os dados validados
         if ($user->update($validatedData)) {
             Log::channel('database')->warning('Edição de conta de usuário.', [
-                'id_user' => $user->id,
+                'user_id' => $user->id,
                 'nome' => $user->name,
                 'acao' => 'Edição de conta',
                 'autor' => Auth::user()->name
@@ -246,8 +246,8 @@ class User
         // Valida a permissao do suario       
         if (!Auth::user()->hasPermission('any.any')) {
             $canDelete = false;
-            $authLicensedId = Auth::user()->person->id_licensed;// Id do licenciado do usuario logado
-            $userLicensedId = $user->person->id_licensed;// Id do licenciado do usuario a ser excluido
+            $authLicensedId = Auth::user()->person->licensed_id;// Id do licenciado do usuario logado
+            $userLicensedId = $user->person->licensed_id;// Id do licenciado do usuario a ser excluido
             $userRole = $user->person->roles[0];// Pega o primeiro perfil do usuario a ser excluido
             
             if (!is_null($authLicensedId) && !is_null($userLicensedId) && ($authLicensedId == $userLicensedId)) {
@@ -263,7 +263,7 @@ class User
         if ($user && $user->delete()) {
             // Loga a acao e o responsavel
             Log::channel('database')->warning('Exclusao de usuario', [
-                'id_user' => $user->id,
+                'user_id' => $user->id,
                 'Nome' => $user->name,
                 'acao' => 'Exclusao de usuario',
                 'autor' => Auth::user()->person->name

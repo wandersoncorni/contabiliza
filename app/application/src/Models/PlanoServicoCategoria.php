@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Application\Models\Servico;
-use App\Application\Models\Plano;
+use App\Application\Models\CategoriaServico;
 
 class PlanoServicoCategoria extends Model
 {
@@ -17,18 +17,32 @@ class PlanoServicoCategoria extends Model
     protected $table="plano_servico_categoria";
 
     protected $fillable = [
-        'id_planos_servicos',
-        'id_servicos',
+        'plano_servico_id',
+        'categoria_servico_id',
+        'servico_id',
         'ativo'
     ];
+
+    protected $hidden = [
+        'plano_servico_id',
+        'categoria_servico_id',
+        'servico_id',
+        'ativo',
+        'created_at'
+    ];
+
+    public function plano(): BelongsTo
+    {
+        return $this->belongsTo(PlanoServico::class);
+    }
+
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(CategoriaServico::class, 'categoria_servico_id', 'id');
+    }
 
     public function servico(): BelongsTo
     {
         return $this->belongsTo(Servico::class);
-    }
-
-    public function plano(): BelongsTo
-    {
-        return $this->belongsTo(Plano::class);
     }
 }

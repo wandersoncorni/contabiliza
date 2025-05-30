@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Application\Models\PlanoServicoCategoria;
 
-class Plano extends Model
+class PlanoServico extends Model
 {
     use HasFactory;
 
@@ -19,11 +19,15 @@ class Plano extends Model
         'id',
         'nome',
         'descricao',
-        'valor',
+        'valor_mensal',
+        'valor_anual',
+        'ativo',
+    ];
+    protected $hidden = [
         'ativo',
     ];
 
-    public function planoCategoria(): HasMany
+    public function categoriasServicos(): HasMany
     {
         return $this->hasMany(PlanoServicoCategoria::class);
     }

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Application\Models\Model>
  */
-class PlanoFactory extends Factory
+class PlanoServicoFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,8 +18,9 @@ class PlanoFactory extends Factory
     {
         return [
             'nome' => 'Plano Básico',
-            'descricao' => 'Plano básico com funcionalidades limitadas',
-            'valor' => '29.99',
+            'descricao' => 'Plano básico com funcionalidades limitadas',            
+            'valor_mensal' => rand(500, 500),
+            'valor_anual' => rand(100, 300),
         ];
     }
 }

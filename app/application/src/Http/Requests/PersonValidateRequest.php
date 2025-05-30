@@ -22,7 +22,7 @@ class PersonValidateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_user'    => ['required', 'integer', 'exists:users,id'],
+            'user_id'    => ['required', 'integer', 'exists:users,id'],
             'name'       => ['sometimes', 'string', 'max:255'],
             'phone'      => ['sometimes', 'string', 'regex:/^\+?[0-9\s\-]{8,15}$/'],
             'roles'      => ['required', 'array'],
@@ -35,9 +35,9 @@ class PersonValidateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id_user.required' => 'O ID do usuário é obrigatório.',
-            'id_user.integer'  => 'O ID do usuário deve ser um número inteiro.',
-            'id_user.exists'   => 'O ID do usuário não existe na base de dados.',
+            'user_id.required' => 'O ID do usuário é obrigatório.',
+            'user_id.integer'  => 'O ID do usuário deve ser um número inteiro.',
+            'user_id.exists'   => 'O ID do usuário não existe na base de dados.',
             'name.required'    => 'O nome é obrigatório.',
             'name.string'      => 'O nome deve ser um texto.',
             'name.max'         => 'O nome deve ter no máximo 255 caracteres.',

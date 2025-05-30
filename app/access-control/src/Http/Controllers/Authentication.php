@@ -65,7 +65,7 @@ class Authentication
                     // Insere o conntexto de autenticação
                     $uRole = Auth::user()->person->roles[0];
                     $uid = Auth::user()->person->id;
-                    $lid = Auth::user()->person->id_licensed;
+                    $lid = Auth::user()->person->licensed_id;
                     session([
                         'rule_context' => $uRole,
                         'client_context' => $uid ?? ($uRole == 'client' ? $uid : null),
