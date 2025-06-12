@@ -32,7 +32,7 @@ class PlanosSeeder extends Seeder
                 'valor_mensal' => rand(300, 500),
                 'valor_anual' => rand(100, 300),
                 'licensed_id' => 1,
-                'posicaao' => $i,
+                'posicao' => $i,
                 'cor' => $cores[$i],
             ]);
         }
