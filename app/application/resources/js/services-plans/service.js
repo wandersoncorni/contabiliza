@@ -3,7 +3,7 @@
  */
 'use strict';
 
-import { getButtons } from '../services-plans.js';
+import { getButtons } from './index.js';
 import { setServicesOptions } from './service-plan.js';
 let servicesData = [];
 export function init() {
@@ -58,15 +58,12 @@ function loadServicesList() {
                         return;
                     }
                     servicesData = await response.json();
-                    let list = '';
-                    servicesData.forEach(ServiceWorker => {
-                        list += `<tr>
-                                <td>${ServiceWorker.nome}</td>
-                                <td>${getButtons(ServiceWorker.id, '/servico')}</td>
-                            </tr>`;
-                    });
-                    $('#tb-services tbody').html(list);
+                    callback({ data: servicesData });
                 }),
+        columns: [
+            { data: 'nome' },
+            { data: (data) => getButtons(data.id, '/servico') }
+        ],
         columnDefs: [
             { "orderable": false, "targets": [1] } // Desabilita ordenação na coluna de ações
         ],

@@ -20,13 +20,20 @@ class PlanosSeeder extends Seeder
             'Prata',
             'Ouro',
         ];
-        foreach ($planos as $plano) {
+        $cores = [
+            '#CD7F32',
+            '#C0C0C0',
+            '#FFC107',
+        ];
+        foreach ($planos as $i=>$plano) {
             PlanoServico::factory()->create([
                 'nome' => $plano,
                 'descricao' => "Plano $plano",
                 'valor_mensal' => rand(300, 500),
                 'valor_anual' => rand(100, 300),
-                'licensed_id' => 1, // Assuming licensed_id is a foreign key to a licensed table
+                'licensed_id' => 1,
+                'posicaao' => $i,
+                'cor' => $cores[$i],
             ]);
         }
 

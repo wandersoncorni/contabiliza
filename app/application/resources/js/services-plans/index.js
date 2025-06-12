@@ -1,17 +1,17 @@
 /**
  * Script principal para pagina de servicos
- * @dependencies services-plans/services-plan.js, 
- *               services-plans/plan.js, 
- *               services-plans/services.js, 
- *               services-plans/categories.js
+ * @dependencies services-plan.js (aba planos de serviços), 
+ *               plan.js (aba planos), 
+ *               services.js (aba serviços), 
+ *               categories.js (aba categorias)
  * @Author Wanderson Corni <wandersoncorni@gmail.com>
  * 
  */
 
-import * as servicePlan from './services-plans/service-plan.js';
-import * as plan from './services-plans/plan.js';
-import * as service from './services-plans/service.js';
-import * as category from './services-plans/category.js';
+import * as servicePlan from './service-plan.js';
+import * as plan from './plan.js';
+import * as service from './service.js';
+import * as category from './category.js';
 
 const serviceListSelected = [];
 export let plansData = [];

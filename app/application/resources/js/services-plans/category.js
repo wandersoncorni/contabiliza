@@ -2,7 +2,7 @@
  * Scripts para aba de categorias do modal de criacao e edicao de plano
  */
 'use strict';
-import { getButtons } from '../services-plans.js';
+import { getButtons } from './index.js';
 
 let categoriesData = [];
 import { setCategoriesOptions } from './service-plan.js';
@@ -58,15 +58,12 @@ function loadCategoriesList() {
                         return;
                     }
                     categoriesData = await response.json();
-                    let list = '';
-                    categoriesData.forEach(categoria => {
-                        list += `<tr>
-                            <td>${categoria.nome}</td>
-                            <td>${getButtons(categoria.id, '/category')}</td>
-                        </tr>`;
-                    });
-                    $('#tb-categories tbody').html(list);
+                    callback({ data: categoriesData });
                 }),
+        columns: [
+            { data: 'nome' },
+            { data: (data) => getButtons(data.id, '/category') }
+        ],
         columnDefs: [
             { "orderable": false, "targets": [1] } // Desabilita ordenação na coluna de ações
         ],

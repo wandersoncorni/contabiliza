@@ -83,4 +83,4 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="{{ asset('js/services-plans.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/services-plans/index.js') }}"></script>

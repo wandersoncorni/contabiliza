@@ -3,7 +3,7 @@
  * @author Wanderson Corni <wandersoncorni@gmail.com>
  */
 'use strict';
-import { loadPlansList } from '../services-plans.js';
+import { loadPlansList } from './index.js';
 const serviceListSelected = [];
 export function init() {
     $('#app-content #modal-form-plan').on('show.bs.modal', function (e) {

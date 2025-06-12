@@ -4,7 +4,7 @@
  */
 'use strict';
 
-import { getButtons, loadPlansList } from '../services-plans.js';
+import { getButtons, loadPlansList } from './index.js';
 import { loadOptionsPlansList } from './service-plan.js';
 
 let plansData = [];
@@ -29,6 +29,15 @@ export function init() {
         }
         editarPlanoServico(plansData.find(plano => plano.id == id));
     });
+    $('#colorPickerButton').on('click', function () {
+        $('#colorPicker').click();
+    });
+    $('#colorPicker').change(function(){
+        $('#form-service-plan input[name="cor"]').val($(this).val());
+    });
+    $('#form-service-plan input[name="cor"]').on('input', function () {
+        $('#colorPicker').val($(this).val());
+    })
 }
 // Carrega a tabela de planos de servicos
 function loadPlanosServicosTable() {
@@ -44,19 +53,16 @@ function loadPlanosServicosTable() {
                         return;
                     }
                     plansData = await response.json();
-                    let planos = '';
-                    plansData.forEach(plano => {
-                        planos += `<tr>
-                        <td>${plano.nome}</td>
-                        <td>${plano.descricao}</td>
-                        <td>${curencyFormat(plano.valor_mensal)}</td>
-                        <td>${curencyFormat(plano.valor_anual)}</td>
-                        <td>${plano.ativo ? '<span class="text-success">Ativo</span>' : '<span class="text-danger">Inativo</span>'}</td>
-                        <td>${getButtons(plano.id, '/plano-servico')}</td>
-                    </tr>`;
-                    });
-                    $('#tb-services-plans tbody').html(planos);
+                    callback({ data: plansData });
                 }),
+        columns: [
+            { data: 'nome' },
+            { data: 'descricao' },
+            { data: (data) => curencyFormat(data.valor_mensal) },
+            { data: (data) => curencyFormat(data.valor_anual) },
+            { data: (data) => data.ativo ? '<span class="text-success">Ativo</span>' : '<span class="text-danger">Inativo</span>' },
+            { data: (data) => getButtons(data.id, '/plano-servico') }
+        ],
         columnDefs: [
             { "orderable": false, "targets": [2, 3, 4] } // Desabilita ordenação na coluna de ações
         ],
@@ -133,7 +139,7 @@ function editarPlanoServico() {
     formData.set('valor_mensal', clearCurrencyValue(formData.get('valor_mensal')));
     formData.set('valor_anual', clearCurrencyValue(formData.get('valor_anual')));
     formData.append('_method', 'PUT');
-    sendRequest({ 
+    sendRequest({
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
