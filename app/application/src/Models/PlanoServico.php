@@ -23,6 +23,8 @@ class PlanoServico extends Model
         'valor_mensal',
         'valor_anual',
         'ativo',
+        'cor',
+        'posicao',
     ];
     protected $hidden = [
         'licensed_id',
