@@ -22,6 +22,8 @@ class PlanoServicoFactory extends Factory
             'valor_mensal' => rand(500, 500),
             'valor_anual' => rand(100, 300),
             'licensed_id' => 1,
+            'cor' => '#ff0000',
+            'posicao' => 1
         ];
     }
 }

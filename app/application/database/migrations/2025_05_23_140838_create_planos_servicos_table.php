@@ -19,6 +19,8 @@ return new class extends Migration
             $table->decimal('valor_mensal', 10, 2);
             $table->decimal('valor_anual', 10, 2);
             $table->boolean('ativo', 1)->default(true);
+            $table->string('cor', 10);
+            $table->string('posicao', 2);
         });
 
         Schema::create('servicos', function (Blueprint $table) {
