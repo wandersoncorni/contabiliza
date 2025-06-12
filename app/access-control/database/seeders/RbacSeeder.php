@@ -188,8 +188,9 @@ class RbacSeeder extends Seeder
             ['role_id' => 2, 'action_id' => 9, 'asset_id' => 17], // O admin acessar rota para licenciados
             ['role_id' => 3, 'action_id' => 9, 'asset_id' => 18], // O gerente pode manter qualquer coisa
 
-            ['role_id' => 5, 'action_id' => 9, 'asset_id' => 5 ], // O consultor pode excluir um licenciado
-
+            ['role_id' => 3, 'action_id' => 9, 'asset_id' => 3 ], // Permissao acesso como gerente
+            ['role_id' => 4, 'action_id' => 9, 'asset_id' => 4 ], // Permissao acesso como consultor
+            ['role_id' => 5, 'action_id' => 9, 'asset_id' => 5 ], // Permissao acesso como cliente
         ];
 
         foreach ($permissions as $permission) {

@@ -15,7 +15,7 @@ class PlanoServicoContratado extends Model
 
     protected $fillable = [
         'id',
-        'id_empresa',
+        'empresa_id',
         'plano',
     ];
 }

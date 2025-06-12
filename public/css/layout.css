@@ -121,3 +121,7 @@ main.content {
 #labelMensal, #labelAnual {
 	cursor: pointer;
 }
+
+.custom-nav-tab a {
+	padding: 0.5rem 1rem !important;
+}

@@ -17,8 +17,9 @@ class PlanoServicoContratadoFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_empresa' => 1,
+            'empresa_id' => 1,
             'plano' => 'Plano Básico',
+            'licensed_id' => 1,
         ];
     }
 }

@@ -21,6 +21,7 @@ class PlanoServicoFactory extends Factory
             'descricao' => 'Plano básico com funcionalidades limitadas',            
             'valor_mensal' => rand(500, 500),
             'valor_anual' => rand(100, 300),
+            'licensed_id' => 1,
         ];
     }
 }

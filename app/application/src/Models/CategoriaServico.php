@@ -18,10 +18,16 @@ class CategoriaServico extends Model
     protected $fillable = [
         'id',
         'nome',
+        'licensed_id',
     ];
 
     public function servicos()
     {
         return $this->hasManyThrough(Servico::class, PlanoServicoCategoria::class);
+    }
+
+    public function listarServicos()
+    {
+        return $this->hasMany(Servico::class);
     }
 }

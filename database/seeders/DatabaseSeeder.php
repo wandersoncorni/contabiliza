@@ -116,35 +116,38 @@ class DatabaseSeeder extends Seeder
         $planosSeeder->run();
 
         PlanoServicoContratado::factory()->create([
-            'id_empresa' => 1,
+            'empresa_id' => 1,
             'plano' => json_encode(['plano_servico' => 'Bronze',
                 'valor' => '100',
                 'categorias' => [
                     'Contabilidade' => ['Abertura de empresa gratuita', 'Contabilidade completa'],
                     'Atendimento' => ['Chat e WhatsApp'],
-                ]
-            ])
+                ],
+                'licensed_id' => $licensed->id
+            ]),                
         ]);
         PlanoServicoContratado::factory()->create([
-            'id_empresa' => 2,
+            'empresa_id' => 2,
             'plano' => json_encode(['plano_servico' => 'Prata',
                 'valor' => '300',
                 'categorias' => [
                     'Contabilidade' => ['Abertura de empresa gratuita', 'Contabilidade completa', 'Certificado digital gratuito'],
                     'Atendimento' => ['Chat e WhatsApp', 'Telefone'],
                     'Notas Fiscais' => ['Emissão de notas pelo nosso time'=> 'Até 5 NFs/mês'],
-                ]
+                ],
+                'licensed_id' => $licensed->id
             ])
         ]);
         PlanoServicoContratado::factory()->create([
-            'id_empresa' => 3,
+            'empresa_id' => 3,
             'plano' => json_encode(['plano_servico' => 'Ouro',
                 'valor' => '500',
                 'categorias' => [
                     'Contabilidade' => ['Abertura de empresa gratuita', 'Contabilidade completa', 'Certificado digital gratuito'],
                     'Atendimento' => ['Chat e WhatsApp', 'Telefone', 'Reunião com especialistas'],
                     'Notas Fiscais' => ['Emissão de notas pelo nosso time' => 'Até 10 NFs/mês', 'Emissor de Notas Fiscais'],
-                ]
+                ],
+                'licensed_id' => $licensed->id
             ])
         ]);
     }

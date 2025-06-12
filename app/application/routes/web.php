@@ -38,9 +38,9 @@ Route::middleware(['auth:sanctum','verified'])->group(function () {
             return view('application::manager.agents');
         })->name('view.agents');
 
-        Route::get('/service-plans', function () {
-            return view('application::manager.service-plans');
-        })->name('view.service-plans');
+        Route::get('/services-plans', function () {
+            return view('application::manager.services-plans.index');
+        })->name('view.services-plans');
 
         Route::get('/billing-plans', function () {
             return view('application::manager.billing-plans');

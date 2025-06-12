@@ -18,6 +18,7 @@ class ServicoFactory extends Factory
     {
         return [
             'nome' => 'Serviço Básico',
+            'licensed_id' => 1,
         ];
     }
 }

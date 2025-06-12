@@ -20,14 +20,14 @@ class PlanoServicoCategoria extends Model
         'plano_servico_id',
         'categoria_servico_id',
         'servico_id',
-        'ativo'
+        'licensed_id'
     ];
 
     protected $hidden = [
         'plano_servico_id',
         'categoria_servico_id',
         'servico_id',
-        'ativo',
+        'licensed_id',
         'created_at'
     ];
 

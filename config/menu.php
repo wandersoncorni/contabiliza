@@ -55,7 +55,7 @@ return [
     ],
     [
         'label' => 'Planos de serviços',
-        'route' => '/service-plans',
+        'route' => '/services-plans',
         'icon' => 'heroicon-tag',
         'roles' => ['manager'],
     ],

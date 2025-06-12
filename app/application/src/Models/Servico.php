@@ -19,6 +19,7 @@ class Servico extends Model
         'id',
         'nome',
         'descricao',
+        'licensed_id',
     ];
 
     public function plano(): HasMany

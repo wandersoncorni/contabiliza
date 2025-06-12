@@ -26,6 +26,7 @@ class PlanosSeeder extends Seeder
                 'descricao' => "Plano $plano",
                 'valor_mensal' => rand(300, 500),
                 'valor_anual' => rand(100, 300),
+                'licensed_id' => 1, // Assuming licensed_id is a foreign key to a licensed table
             ]);
         }
 
@@ -42,6 +43,7 @@ class PlanosSeeder extends Seeder
         foreach ($servicos as $servico) {
             Servico::factory()->create([
                 'nome' => $servico,
+                'licensed_id' => 1,
             ]);
         }
 
@@ -53,11 +55,12 @@ class PlanosSeeder extends Seeder
         foreach ($categorias as $categoria) {
             CategoriaServico::factory()->create([
                 'nome' => $categoria,
+                'licensed_id' => 1,
             ]);
         }
         $planosServicosCategorias = [
             // Plano 1 - Bronze
-            [[1,1,1],[1,1,2],[1,2,1]],
+            [[1,1,1],[1,1,2],[1,2,4]],
             // Plano 2 - Prata
             [[2,1,1],[2,1,2],[2,1,3],[2,2,4],[2,2,5],[2,3,7]],
             // Plano 3 - Ouro
@@ -71,6 +74,7 @@ class PlanosSeeder extends Seeder
                     'plano_servico_id' => $pscItem[0],
                     'categoria_servico_id' => $pscItem[1],
                     'servico_id' => $pscItem[2],
+                    'licensed_id' => 1
                 ]);
             }
         }

@@ -17,6 +17,7 @@ class PlanoServico extends Model
 
     protected $fillable = [
         'id',
+        'licensed_id',
         'nome',
         'descricao',
         'valor_mensal',
@@ -24,7 +25,7 @@ class PlanoServico extends Model
         'ativo',
     ];
     protected $hidden = [
-        'ativo',
+        'licensed_id',
     ];
 
     public function categoriasServicos(): HasMany

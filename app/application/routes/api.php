@@ -5,11 +5,14 @@
  */
 
 use App\Application\Http\Controllers\Agent;
+use App\Application\Http\Controllers\CategoriaServico;
 use App\Application\Http\Controllers\Client;
 use App\Application\Http\Controllers\Consultant;
 use App\Application\Http\Controllers\Portfolio;
 use App\Application\Http\Controllers\Company;
 use App\Application\Http\Controllers\Plano;
+use App\Application\Http\Controllers\PlanoServico;
+use App\Application\Http\Controllers\Servico;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
@@ -30,6 +33,35 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('clients', [Client::class, 'list']);
 
         Route::get('consultants', [Consultant::class, 'list']);
+
+        Route::controller(Plano::class)->group(function () {
+            Route::post('plano', 'create');
+            Route::delete('plano/{id?}', 'delete');
+        });
+
+        Route::controller(PlanoServico::class)->group(function () {
+            Route::get('planos-servicos', 'list');
+            Route::post('plano-servico', 'create');
+            Route::put('plano-servico/{id?}', 'update');
+            Route::delete('plano-servico/{id?}', 'delete');
+        });
+
+        Route::controller(CategoriaServico::class)->group(function () {
+            Route::get('categorias-servicos', 'list');
+            Route::get('categorias-e-servicos', 'listCategoriesAndServices');
+            Route::post('categoria-servico', 'create');
+            Route::put('categoria-servico/{id?}', 'update');
+            Route::delete('categoria-servico/{id?}', 'delete');
+            Route::delete('categoria-plano/{pid}/{cid}', 'deleteCategoryPlan');
+        });
+
+        Route::controller(Servico::class)->group(function () {
+            Route::get('servicos', 'list');
+            Route::post('servico', 'create');
+            Route::put('servico/{id?}', 'update');
+            Route::delete('servico/{id?}', 'delete');
+            Route::delete('servico-plano/{pid}/{cid}/{sid}', 'excluirServicoPlano');
+        });
     });
 
     Route::middleware(['haspermission:access.client'])->group(function () {

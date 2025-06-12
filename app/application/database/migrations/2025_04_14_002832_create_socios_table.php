@@ -36,7 +36,7 @@ return new class extends Migration
     });
     // Tabela de relacionamento entre sócios e empresas
     Schema::create('socio_empresa', function (Blueprint $table) {
-        $table->foreignId('id_empresa')->constrained('empresas', 'id')->cascadeOnDelete();
+        $table->foreignId('empresa_id')->constrained('empresas', 'id')->cascadeOnDelete();
         $table->foreignId('id_socio')->constrained('socios', 'id')->cascadeOnDelete();
         $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         $table->timestamp('deleted_at')->nullable();
