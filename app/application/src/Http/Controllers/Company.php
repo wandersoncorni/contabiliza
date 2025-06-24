@@ -11,4 +11,22 @@ class Company
     {
         return response()->json([]);
     }
+    /**
+     * Metodo para criar uma nova empresa
+     */
+    public function create(Request $request) : JsonResponse
+    {
+        dd($request->all());
+        return response()->json([]);
+    }
+
+    public function update(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
+
+    public function delete(Request $request) : JsonResponse
+    {
+        return response()->json([]);
+    }
 }
