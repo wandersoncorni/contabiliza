@@ -65,8 +65,19 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     });
 
     Route::middleware(['haspermission:access.client'])->group(function () {
-        Route::get('companies', [Company::class, 'list']);
-        Route::get('agents', [Agent::class, 'list']);
+        Route::controller(Agent::class)->group(function () {
+            Route::get('agents', 'list');
+            Route::post('agent', 'create');
+            Route::put('agent/{id?}', 'update');
+            Route::delete('agent/{id?}', 'delete');
+        });
+
+        Route::controller(Company::class)->group(function () {
+            Route::get('companies', 'list');
+            Route::post('company', 'create');
+            Route::put('company/{id?}', 'update');
+            Route::delete('company/{id?}', 'delete');
+        });
     });
 });
 

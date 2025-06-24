@@ -30,10 +30,6 @@ Route::middleware(['auth:sanctum','verified'])->group(function () {
             return view('application::manager.partners');
         })->name('view.partners');
 
-        Route::get('/companies', function () {
-            return view('application::manager.companies');
-        })->name('view.companies');
-
         Route::get('/agents', function () {
             return view('application::manager.agents');
         })->name('view.agents');
@@ -57,8 +53,8 @@ Route::middleware(['auth:sanctum','verified'])->group(function () {
         })->name('view.agents');
 
         Route::get('/companies', function () {
-            return view('application::client.companies');
-        })->name('view.companies');
+            return view('application::client.company.index');
+        })->name('view.companies.index');
 
         Route::get('/partners', function () {
             return view('application::client.partners');
