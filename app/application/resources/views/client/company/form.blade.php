@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="{{ asset('css/step-wizard.css') }}">
 <div class="modal fade" id="modal-form-company" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="modal-form-company" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -37,35 +36,39 @@
                         </ul>
                     </div>
                 </div>
-                <form id="form-company">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="tab-content" id="nav-tabContent">
-                                <div class="tab-pane fade show active" id="nav-empresa" role="tabpanel" aria-labelledby="nav-empresa-tab">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="tab-content" id="nav-tabFormCompany">
+                            <div class="tab-pane fade show active" id="nav-company" role="tabpanel" aria-labelledby="nav-empresa-tab">
+                                <form id="form-company">
                                     @include('application::client.company.partials.company')
-                                </div>
-                                <div class="tab-pane fade" id="nav-partners" role="tabpanel" aria-labelledby="nav-partners-tab">
-                                    @include('application::client.company.partials.partners')
-                                </div>
-                                <div class="tab-pane fade" id="nav-plano" role="tabpanel" aria-labelledby="nav-plano-tab">
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="nav-partners" role="tabpanel" aria-labelledby="nav-partners-tab">
+                                @include('application::client.company.partials.partners')
+                            </div>
+                            <div class="tab-pane fade" id="nav-plano" role="tabpanel" aria-labelledby="nav-plano-tab">
+                                <form id="form-plan">
                                     @include('application::client.company.partials.plan')
-                                </div>
-                                <div class="tab-pane fade" id="nav-cobranca" role="tabpanel" aria-labelledby="nav-cobranca-tab">
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="nav-cobranca" role="tabpanel" aria-labelledby="nav-cobranca-tab">
+                                <form id="form-billing">
                                     @include('application::client.company.partials.billing')
-                                </div>
-                                <div class="tab-pane fade" id="nav-billings" role="tabpanel" aria-labelledby="nav-billings-tab">
-                                    @include('application::client.company.partials.billings')
-                                </div>
+                                </form>
+                            </div>
+                            <div class="tab-pane fade" id="nav-billings" role="tabpanel" aria-labelledby="nav-billings-tab">
+                                @include('application::client.company.partials.billings')
                             </div>
                         </div>
                     </div>
+                </div>
             </div>
-            </form>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" class="btn btn-info disabled" id="btn-prev">Voltar</button>
+                <button type="button" class="btn btn-info" id="btn-prev" disabled>Voltar</button>
                 <button type="button" class="btn btn-info" id="btn-next">Próximo</button>
-                <button type="button" class="btn btn-primary disabled" id="btn-save-company">Salvar</button>
+                <button type="button" class="btn btn-primary" id="btn-save">Salvar</button>
             </div>
         </div>
     </div>

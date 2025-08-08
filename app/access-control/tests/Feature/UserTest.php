@@ -4,11 +4,12 @@ use App\AccessControl\Models\User;
 use App\Logger\Models\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\URL;
 
 it('criar um usuario admin', function () {
     $userData = [
         'email' => 'outro.admin@contabiliza.com.br',
-        'name' => 'admin',
+        'name' => 'outro.admin',
         'role' => 'admin'
     ];
     
@@ -62,7 +63,7 @@ it('criar um usuario agente', function () {
     ]);
 
     $userData = [
-        'email' => 'agente@contabiliza.com.br',
+        'email' => 'agente2@contabiliza.com.br',
         'name' => 'Agente',
         'role' => 'agent',
     ];

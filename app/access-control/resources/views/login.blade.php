@@ -53,7 +53,6 @@
                                 <div><a href="{{ route('forgot-password.view') }}" class="small text-right">Esqueceu a senha?</a></div>
                             </div>
                         </div>
-                        @csrf
                         <div class="d-grid">
                             <button type="submit" id="submit" class="btn btn-gray-800">Enviar</button>
                         </div>

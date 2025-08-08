@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('planos_servicos_contratados', function (Blueprint $table) {
             $table->id();
             $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
-            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('cascade');
+            $table->foreignId('client_id')->constrained('people')->onDelete('cascade');
             $table->longText('plano');
             $table->boolean('ativo')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

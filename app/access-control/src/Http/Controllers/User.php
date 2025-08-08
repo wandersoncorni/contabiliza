@@ -74,12 +74,19 @@ class User
         }
         // Cria a senha aleatoria
         $formData = array_merge($formData, ['password' => Hash::make(Str::random(8))]);
-
         // Criar o usuário
-        $user = UserModel::create(['email' => $formData['email'], 'password' => $formData['password'], 'active' => 1]);
+        try{
+            $user = UserModel::create(['email' => $formData['email'], 'password' => $formData['password'], 'active' => 1]);
 
-        if (!$user) {
-            return response()->json(['message' => 'Erro ao criar o usuário.'], 500);
+            if (!$user) {
+                return response()->json(['error' => 'Erro ao criar o usuário.'], 500);
+            }
+        } catch (\Exception $e) {
+            Log::channel('database')->error('user.create:' . $e->getMessage());
+            if(preg_match('/UNIQUE/', $e->getMessage())){
+                return response()->json(['error' => 'O email já existe!'], 400);
+            }dd($e->getMessage());
+            return response()->json(['error' => 'Erro ao criar o usuário.'], 500);
         }
         // Cria a pessoa relacionada ao usuario e associa a um cliente ou agente se for o caso
         try {
@@ -93,7 +100,7 @@ class User
         } catch (\Exception $e) {
             Log::channel('database')->error('user.create:' . $e->getMessage());
             $user->delete();
-            return response()->json(['message' => 'Erro ao criar o usuário e pessoa.'], 500);
+            return response()->json(['error' => 'Erro ao criar o usuário e pessoa.'], 500);
         }
         // Disparar evento de verificação de email
         event(new Registered($user));

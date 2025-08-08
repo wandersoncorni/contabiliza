@@ -18,7 +18,6 @@ $userImage = 'data:image/svg+xml,<svg data-slot="icon" aria-hidden="true" fill="
         });
     });
     </script>
-    <script src="/js/{{Auth::user()->person->roles[0]}}.js"></script>
 @endpush
 @section('content')
 <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">

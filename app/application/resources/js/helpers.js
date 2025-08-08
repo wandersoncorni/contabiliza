@@ -30,7 +30,7 @@ export function clearCurrencyValue(value) {
  * @param {String} value
  * @returns
  */
-export function curencyFormat(value) {
+export function currencyFormat(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 /**
@@ -68,6 +68,14 @@ export function getAddress(field) {
             }
             const data = await response.json();
             $(`[data-address="${seletor}"]`).each(function () {
+                if ($(this).prop('name').includes('estado')) {
+                    $(this).children('option').each(function () {
+                        if ($(this).text() === data.estado) {
+                            $(this).prop('selected', true);
+                        }
+                    });
+                    return;
+                }
                 Object.keys(data).forEach(d => {
                     if ($(this).prop('name').includes(d)) {
                         $(this).val(data[d]);
@@ -79,24 +87,24 @@ export function getAddress(field) {
 }
 
 export function formatPercentage(field) {
-    $(field).on('input', function() {
+    $(document).on('input', field, function () {
         let val = $(this).val();
         val = sanitizeInput(val);
-        if(val.length > 5){
+        if (val.length > 5) {
             val = val.substring(0, 5);
         }
-        if(val > 100) {
-            val = val/10;
+        if (val > 100) {
+            val = val / 10;
         }
         $(this).val(val + (val !== '' ? '%' : ''));
     });
 
-    $(field).on('focus', function() {
+    $(document).on('focus', field, function () {
         let val = $(this).val();
         $(this).val(val.replace('%', ''));
     });
 
-    $(field).on('blur', function() {
+    $(document).on('blur', field, function () {
         let val = sanitizeInput($(this).val());
         val = clampToPercentage(val);
         if (val !== '') {
@@ -125,12 +133,81 @@ function clampToPercentage(val) {
     return num.toString();
 }
 
-export function addInvalidFeedback(field, message='Campo obrigatório!') {
+export function addInvalidFeedback(field, message = 'Campo obrigatório!') {
     $(field).addClass('is-invalid');
     $(field).after('<div class="invalid-feedback">' + message + '</div>');
 }
+/**
+ * Remove a classe is-invalid e o feedback de erro
+ * @param {*} form O seletor do formulário, se não for passado, remove de todos. Deve ser acrescentado de # (ex: #form-company)
+ */
+export function removeInvalidFeedback(form = '') {
+    $(`${form} .is-invalid`).removeClass('is-invalid');
+    $(`${form} .invalid-feedback`).remove();
+}
+// aplica a máscara no CPF
+export function cpfFormat(field) {
+    var value = $(field).val().replace(/\D/g, ''); // remove tudo que não for número
 
-export function removeInvalidFeedback() {
-    $('.is-invalid').removeClass('is-invalid');
-    $('.invalid-feedback').remove();
+    if (value.length > 11) value = value.substring(0, 11); // limita a 11 dígitos
+
+    // aplica a máscara
+    if (value.length > 9) {
+        value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/, "$1.$2.$3-$4");
+    } else if (value.length > 6) {
+        value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+    } else if (value.length > 3) {
+        value = value.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+    }
+
+    $(field).val(value);
+}
+// aplica a máscara no telefone
+export function foneFormat(field) {
+    var value = $(field).val().replace(/\D/g, ''); // remove tudo que não for número
+
+    if (value.length > 11) value = value.substring(0, 11); // limita a 11 dígitos
+
+    if (value.length >= 10) {
+        // celular com 9 dígitos
+        value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    } else if (value.length >= 6) {
+        // fixo com 8 dígitos
+        value = value.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d{0,2})$/, '($1');
+    }
+
+    $(field).val(value);
+}
+/**
+ * Converte o valor de uma string no formato de moeda para float
+ * @param {string} valor 
+ * @returns 
+ */
+export function parseCurrencyToFloat(valor) {
+    if (typeof valor !== 'string') return 0;
+
+    return parseFloat(
+        valor
+            .replace(/\s/g, '')      // remove espaços
+            .replace('R$', '')       // remove símbolo R$
+            .replace(/\./g, '')      // remove pontos
+            .replace(',', '.')       // troca vírgula por ponto
+    );
+}
+// Lista de estados brasileiros
+let statesList = [];
+export async function listStates(nameField) {
+    $(nameField).empty().addClass('skeleton');
+    if (statesList.length == 0) {
+        const request = await fetch('/api/v1/auxiliares/listar-estados');
+        statesList = await request.json();
+    }
+    $(nameField).html('<option value="">Selecione um estado</option>').removeClass('skeleton');
+    Object.keys(statesList).forEach(state => {
+        $(nameField).append($('<option />', { value: statesList[state].sigla, text: statesList[state].descricao }));
+    });
 }
