@@ -16,7 +16,6 @@ class UserSeeder extends Seeder
             // Administrador geral da aplicação. Possui acesso a todos os modulos
             [
                 'email' => "admin@contabiliza.com.br",
-                'name' => 'admin',
                 'password' => 'Senha@123',
                 'email_verified_at' => now(),
                 'active' => 1
@@ -24,7 +23,6 @@ class UserSeeder extends Seeder
             // Usuário com acesso adminisrativo. Deve ser associado a um licenciado. Tem acesso a todos os modulos e usuários do licenciado
             [
                 'email' => 'manager@contabiliza.com.br',
-                'name' => 'manager.licenciado1',
                 'password' => 'Senha@123',
                 'email_verified_at' => now(),
                 'active' => 1
@@ -32,7 +30,6 @@ class UserSeeder extends Seeder
             // Usuário com acesso a a módulos necessários ao seu perfil. Deve ser associado a um licenciado.
             [
                 'email' => 'consultant@contabiliza.com.br',
-                'name' => 'consultant.licenciado1',
                 'password' => 'Senha@123',
                 'email_verified_at' => now(),
                 'active' => 1
@@ -40,7 +37,6 @@ class UserSeeder extends Seeder
             // Usuário cliente. Deve ser associado a um licenciado. Tem acesso a módulos necessários ao seu perfil
             [
                 'email' => 'client@contabiliza.com.br',
-                'name' => 'client.licenciado1',
                 'password' => 'Senha@123',
                 'email_verified_at' => now(),
                 'active' => 1
@@ -48,14 +44,12 @@ class UserSeeder extends Seeder
             // Usuário agente licenciado. Deve ser associado a um cliente. Tem acesso a módulos específios do cliente
             [
                 'email' => 'agent@contabiliza.com.br',
-                'name' => 'agent.licenciado1',
                 'password' => 'Senha@123',
                 'email_verified_at' => now(),
                 'active' => 1
             ],
             [
                 'email' => 'client2@contabiliza.com.br',
-                'name' => 'client.licenciado2',
                 'password' => 'Senha@123',
                 'email_verified_at' => null,
                 'active' => 1
