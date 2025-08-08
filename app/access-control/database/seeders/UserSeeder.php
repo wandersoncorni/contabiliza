@@ -55,7 +55,6 @@ class UserSeeder extends Seeder
                 'active' => 1
             ],
         ];
-
         foreach ($data as $item) {
             User::factory()->create($item);
         }
