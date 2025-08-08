@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Application\Models\PlanoServico as PlanoServicoModel;
+use App\Application\Models\PlanoServicoCategoria;
 
 class PlanoServico
 {
@@ -16,11 +17,48 @@ class PlanoServico
     }
     /**
      * Retorna todos os planos de servicos
+     * 
+     * @param int $atvid - O id da area de atividade
      */
-    public function list(): JsonResponse
+    public function list($atvid = null): JsonResponse
     {
-        $PlanoServicos = PlanoServicoModel::where('ativo', true)
-            ->with(['categoriasServicos.categoria:id,nome', 'categoriasServicos.servico:id,nome'])
+        $lid = $this->licenseId;
+        $PlanoServicos = PlanoServicoModel::select('id', 'nome', 'descricao')
+            ->where([
+                ['ativo', true], 
+                ['licensed_id', $lid]
+            ])
+            ->with(['valorPlanoServico' => function ($query)use($atvid) {
+                $query->select('id', 'plano_servico_id', 'valor', 'rotulo')
+                ->where('area_atividade_id', $atvid)
+                ->where('ativo', true);
+            }])
+            ->with([
+                'plano.categoria:id,nome', 
+                'plano.servico:id,nome',
+                'plano.servico.valor:servico_id,valor,condicoes'
+            ])
+            ->get();
+        return response()->json($PlanoServicos);
+    }
+    /**
+     * Retorna um plano de servico especifico
+     * 
+     * @param int $pid - O id do plano
+     */
+    public function listPlan($pid = null): JsonResponse
+    {
+        $lid = $this->licenseId;
+        $query = PlanoServicoModel::select('id', 'nome', 'descricao')
+        ->where('licensed_id', $lid)
+        ->where('ativo', true);
+        if ($pid) {
+            $query->where('id', $pid);
+        }
+        $PlanoServicos = $query->with([
+            'servicos.valorServico',
+            //'categoriasPlano'
+        ])
             ->get();
         return response()->json($PlanoServicos);
     }

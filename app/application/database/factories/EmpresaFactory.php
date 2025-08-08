@@ -19,9 +19,29 @@ class EmpresaFactory extends Factory
     {
         $faker = Faker::create('pt_BR');
         return [
-            'client_ide' => 1,
+            'client_id' => 1,
             'nome' => $faker->company,
-            'cnpj' => $this->generateFakeCnpj()
+            'cnpj' => $this->generateFakeCnpj(),
+            'cnae' => 'A',
+            'capital_social' => $faker->randomFloat(2, 10000, 1000000),
+            'area_atividade_id' => $faker->numberBetween([1,2]),
+            'logradouro' => $faker->streetName,
+            'numero' => $faker->buildingNumber,
+            'complemento' => $faker->secondaryAddress,
+            'bairro' => $faker->secondaryAddress,
+            'cep' => $faker->postcode,
+            'estado' => $faker->state,
+            'municipio' => $faker->city,
+            'inscricao_municipal' => $faker->numerify('IM-########'),
+            'inscricao_estadual' => $faker->numerify('IE-########'),
+            'data_abertura' => $faker->date(),
+            'tipo_inscricao' => 'CNPJ',
+            'numero_inscricao' => $this->generateFakeCnpj(),
+            'natureza_juridica_id' => $faker->numberBetween(1, 3),
+            'area_atividade_id' => 1, // 1 - Comércio, 2 - Serviços
+            'regime_tributario_id' => 1, // 1 - Simples Nacional, 2 - Lucro Presumido
+            'faixa_faturamento_id' => 1, 
+            'created_at' => now(),
         ];
     }
 

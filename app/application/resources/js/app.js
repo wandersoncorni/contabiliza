@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    // Inicializa o smooth scroll
     const scroll = new SmoothScroll('a[href*="#"]', {
         speed: 300,
         speedAsDuration: true,
@@ -7,6 +8,7 @@ $(document).ready(function () {
         popstate: false,
         emitEvents: true
     });
+    // Monta o menu lateral
     menuItens.forEach(item => {
         $('#sidebarMenu ul').append(
             $('<li />', { class: 'nav-item' }).append(
@@ -17,6 +19,7 @@ $(document).ready(function () {
             )
         )
     });
+    // Controle do menu lateral
     $('#sidebarMenu ul li a').on('click', function (e) {
         e.preventDefault();
         fetch($(this).attr('href'), {
@@ -24,7 +27,6 @@ $(document).ready(function () {
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'include'
         })
             .then(response => {
                 if (response.status === 200) {
@@ -97,74 +99,3 @@ $(document).ready(function () {
         }
     }, 1000);
 });
-/**
- * Constroi as tabelas de susuarios para os modulos de consultores, clientes e agentes
- * @param {string} container 
- * @param {string} url 
- * @returns 
- */
-globalThis.loadUsersTable = function (container, url) {
-    return new DataTable(container, {
-        ajax: function (data, callback, settings) {
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            })
-                .then(response => response.json())
-                .then(json => {
-                    callback({ data: json });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar os dados:', error);
-                });
-        },
-        columns: [
-            {
-                data: (data) => {
-                    return $('<div />', { class: 'd-flex' }).append([
-                        $('<img />', { class: 'rounded-circle avatar bg-light me-3', src: data.person.photo ?? '/img/user.png' }),
-                        $('<div />').append([
-                            $('<h1 />', { class: 'h5 mb-0 font-size-14' }).text(data.person.name),
-                            $('<p />', { class: 'text-muted font-size-12 mb-0' }).append(
-                                $('<i />', { class: 'heroicon heroicon-envelope mt-1 me-1 float-start' }),
-                                data.email
-                            ),
-                        ]),
-                    ]).prop('outerHTML');
-                }
-            },
-            { data: (data) => data.active ? $('<span />', { class: 'text-success' }).text('Ativo').prop('outerHTML') : $('<span />', { class: 'text-danger' }).text('Inativo').prop('outerHTML') },
-            {
-                data: (data) => new Date(data.created_at).toLocaleDateString('pt-BR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                })
-            },
-            {
-                data: (data) => $('<div />').append([
-                    $('<button />', { class: 'btn btn-link btn-transparent text-dark dropdown-toggle dropdown-toggle-split m-0 p-0', type: 'button', 'data-bs-toggle': 'dropdown', 'aria-expanded': false, 'aria-haspopup': true }).append(
-                        $('<i />', { class: 'heroicon heroicon-horizontal-elipsis float-start' })
-                    ),
-                    $('<div />', { class: 'dropdown-menu dashboard-dropdown dropdown-menu-start mt-2 py-1' }).append(
-                        $('<a />', { class: 'dropdown-item text-primary', href: `/api/v1/users/${data.id}/edit` }).append(
-                            $('<i />', { class: 'heroicon heroicon-pencil-square me-2' }),
-                            'Editar'
-                        ),
-                        $('<a />', { class: 'dropdown-item text-danger', href: `/api/v1/users/${data.id}/delete` }).append(
-                            $('<i />', { class: 'heroicon heroicon-trash me-2' }),
-                            'Excluir'
-                        )
-                    )
-                ]).prop('innerHTML')
-            },
-        ],
-        columnDefs: [
-            { targets: [0], orderable: false },
-            { targets: [0, 1], searchable: false },
-        ],
-    });
-}

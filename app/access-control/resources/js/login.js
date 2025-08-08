@@ -19,32 +19,32 @@ document.querySelector('#login-form').addEventListener("submit", async (event) =
     fetch('/api/v1/login', {
         method: 'POST',
         headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             'Content-Type': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({
             email: document.getElementById('email').value,
             password: document.getElementById('password').value,
-            _token: document.querySelector('input[name="_token"]').value
         })
     })
-        .then(response => {
-            if(response.status === 419) {
+        .then(async response => {
+            if (response.status == 419) {
                 fetch('/csrf-token', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
                     },
                 })
-                .then(response => response.json())
-                .then(data => {
-                    document.querySelector('input[name="_token"]').value = data.token;
-                    document.querySelector('#login-form').submit()
-                });
+                    .then(async response => {
+                        const data = await response.json();
+                        document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
+                        document.querySelector('#login-form [type="submit"]').click();
+                    });
+                return;
             }
-            return response.json();
-        })
-        .then(data => {
+
+            const data = await response.json();
             if (data.error) {
                 Swal.fire({
                     icon: 'error',

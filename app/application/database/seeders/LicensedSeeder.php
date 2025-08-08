@@ -13,6 +13,15 @@ class LicensedSeeder extends Seeder
      */
     public function run(): void
     {
-        Licensed::factory()->create();
+        $data =[
+            ['name' => 'Contabiliza'],
+            ['name' => 'licensed 2'],
+            ['name' => 'licensed 3'],
+            ['name' => 'licensed 4'],
+            ['name' => 'licensed 5'],
+        ];
+        foreach ($data as $item) {
+            Licensed::factory()->create($item);
+        }
     }
 }

@@ -2,14 +2,21 @@
 
 namespace Database\Seeders;
 
-use App\AccessControl\Models\User;
-use App\Application\Models\Person;
-use App\Application\Models\Licensed;
-use App\Application\Models\Empresa;
-use App\Application\Models\PlanoServicoContratado;
+use App\Application\Database\Seeders\AuxiliaresSeeder;
+use App\Application\Database\Seeders\LicensedSeeder;
 use App\AccessControl\Database\Seeders\RbacSeeder;
 use App\Application\Database\Seeders\PlanosSeeder;
+use App\Application\Database\Seeders\NaturezaJuridicaSeeder;
+use App\Application\Database\Seeders\FaixaFaturamentoSeeder;
+use App\AccessControl\Database\Seeders\UserSeeder;
+use App\Application\Database\Seeders\PersonSeeder;
+use App\Application\Database\Seeders\RegimeBensSeeder;
+use App\Application\Database\Seeders\CnaeSeeder;
+use App\Application\Database\Seeders\RegimeTributarioSeeder;
+use App\Application\Database\Seeders\AreaAtividadeSeeder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,137 +25,64 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $licensed = Licensed::factory()->create([
-            'name' => 'Contabiliza',
-        ]);
-        $licensed2 = Licensed::factory()->create([
-            'name' => 'licensed 2',
-        ]);
+        //$this->truncateTables();
 
-        // Cria um admininistrador validado
-        $admin = User::factory()->create([
-            'email' => "admin@contabiliza.com.br",
-            'password' => 'Senha@123',
-            'email_verified_at' => now(),
-            'active' => 1
-        ]);
-        Person::factory()->create([
-            'name' => "Admin",
-            'client_id' => null,
-            'user_id' => $admin->id,
-            'roles' => ["admin"],
-            'licensed_id' => null,
-        ]);
-        foreach ([$licensed->id, $licensed2->id] as $lid) {
-            $manager = User::factory()->create([
-                'email' => "manager$lid@contabiliza.com.br",
-                'password' => 'Senha@123',
-                'email_verified_at' => now(),
-                'active' => 1,
-            ]);
-            Person::factory()->create([
-                'name' => 'Manager ' . $lid,
-                'client_id' => null,
-                'user_id' => $manager->id,
-                'roles' => ["manager"],
-                'licensed_id' => $lid
-            ]);
+        $regimeBensSeeder = new RegimeBensSeeder();
+        $regimeBensSeeder->run();
 
-            $consultant = User::factory()->create([
-                'email' => 'consultant' . $lid . '@contabiliza.com.br',
-                'password' => 'Senha@123',
-                'email_verified_at' => now(),
-                'active' => 1
-            ]);
-            Person::factory()->create([
-                'name' => 'Consultant ' . $lid,
-                'client_id' => null,
-                'user_id' => $consultant->id,
-                'roles' => ["consultant"],
-                'licensed_id' => $lid,
-            ]);
-        }
+        $userSeeder = new UserSeeder();
+        $userSeeder->run();
 
-        $client = User::factory()->create([
-            'email' => 'client@contabiliza.com.br',
-            'password' => 'Senha@123',
-            'email_verified_at' => now(),
-            'active' => 1
-        ]);
-        Person::factory()->create([
-            'name' => 'Client',
-            'client_id' => null,
-            'user_id' => $client->id,
-            'roles' => ["client"],
-            'licensed_id' => $licensed->id,
-        ]);
-        $agent = User::factory()->create([
-            'email' => 'agent@contabiliza.com.br',
-            'password' => 'Senha@123',
-            'email_verified_at' => now(),
-            'active' => 1
-        ]);
-        $person = Person::factory()->create(['user_id' => $agent->id, 'roles' => ["agent"], 'licensed_id' => $licensed->id, 'client_id' => $client->id]);
+        $licensedSeeder = new LicensedSeeder();
+        $licensedSeeder->run();
 
-        // Cria usuarios consultores
-        $consultants = User::factory(5)->create();
-        foreach ($consultants as $key => $user) {
-            $person = Person::factory()->create(['user_id' => $user->id, 'roles' => ['consultant'], 'licensed_id' => $licensed->id]);
-        }
-
-        // Cria usuarios clientes
-        $clients = User::factory(5)->create();
-        foreach ($clients as $key => $user) {
-            $person = Person::factory()->create(['user_id' => $user->id, 'roles' => ["client"], 'licensed_id' => $licensed->id]);
-        }
-        // Cria usuarios agentes
-        $agents = User::factory(5)->create();
-        foreach ($agents as $key => $user) {
-            $person = Person::factory()->create(['user_id' => $user->id, 'roles' => ["agent"], 'licensed_id' => $licensed->id, 'client_id' => $clients[$key]->id]);
-        }
-
-        Empresa::factory(3)->create();
+        $personSeeder = new PersonSeeder();
+        $personSeeder->run();
 
         $rbacSeeder = new RbacSeeder();
         $rbacSeeder->run();
 
+        $naturezaJuridicaSeeder = new NaturezaJuridicaSeeder();
+        $naturezaJuridicaSeeder->run();
+
+        $faixaFaturamentoSeeder = new FaixaFaturamentoSeeder();
+        $faixaFaturamentoSeeder->run();
+
         $planosSeeder = new PlanosSeeder();
         $planosSeeder->run();
 
-        PlanoServicoContratado::factory()->create([
-            'empresa_id' => 1,
-            'plano' => json_encode(['plano_servico' => 'Bronze',
-                'valor' => '100',
-                'categorias' => [
-                    'Contabilidade' => ['Abertura de empresa gratuita', 'Contabilidade completa'],
-                    'Atendimento' => ['Chat e WhatsApp'],
-                ],
-                'licensed_id' => $licensed->id
-            ]),                
-        ]);
-        PlanoServicoContratado::factory()->create([
-            'empresa_id' => 2,
-            'plano' => json_encode(['plano_servico' => 'Prata',
-                'valor' => '300',
-                'categorias' => [
-                    'Contabilidade' => ['Abertura de empresa gratuita', 'Contabilidade completa', 'Certificado digital gratuito'],
-                    'Atendimento' => ['Chat e WhatsApp', 'Telefone'],
-                    'Notas Fiscais' => ['Emissão de notas pelo nosso time'=> 'Até 5 NFs/mês'],
-                ],
-                'licensed_id' => $licensed->id
-            ])
-        ]);
-        PlanoServicoContratado::factory()->create([
-            'empresa_id' => 3,
-            'plano' => json_encode(['plano_servico' => 'Ouro',
-                'valor' => '500',
-                'categorias' => [
-                    'Contabilidade' => ['Abertura de empresa gratuita', 'Contabilidade completa', 'Certificado digital gratuito'],
-                    'Atendimento' => ['Chat e WhatsApp', 'Telefone', 'Reunião com especialistas'],
-                    'Notas Fiscais' => ['Emissão de notas pelo nosso time' => 'Até 10 NFs/mês', 'Emissor de Notas Fiscais'],
-                ],
-                'licensed_id' => $licensed->id
-            ])
-        ]);
+        $cnae = new CnaeSeeder();
+        $cnae->run();
+
+        $regimeTributario = new RegimeTributarioSeeder();
+        $regimeTributario->run();
+
+        $areaAtuacao = new AreaAtividadeSeeder();
+        $areaAtuacao->run();
+
+        $auxiliaresSeeder = new AuxiliaresSeeder();
+        $auxiliaresSeeder->run();
+    }
+    /**
+     * Truncate all tables except migrations.
+     */
+    protected function truncateTables(): void
+    {
+        Schema::disableForeignKeyConstraints();
+
+        $tables = DB::select("
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'contabiliza' AND table_name != 'migrations'
+        ");
+
+        foreach ($tables as $table) {
+            if ($table->table_name !== 'migrations') {
+                DB::table($table->table_name)->truncate();
+            }
+        }
+
+        // Reabilita verificação de chave estrangeira
+        Schema::enableForeignKeyConstraints();
     }
 }
