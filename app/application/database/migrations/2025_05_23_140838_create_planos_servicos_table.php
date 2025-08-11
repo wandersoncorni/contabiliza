@@ -30,7 +30,8 @@ return new class extends Migration
             $table->id();          
             $table->foreignId('licensed_id')->constrained('licensed')->onDelete('cascade');
             $table->foreignId('plano_servico_id')->constrained('planos_servicos')->onDelete('cascade');
-            $table->tinyInteger('area_atividade_id')->length(1)->comment('1 - Comércio, 2 - Serviços');
+            $table->tinyInteger('area_atividade_id')->length(1)->comment('1 - Comércio, 2 - Serviços, 3 - Comércio e Serviços');
+            $table->tinyInteger('periodidade_id')->length(1)->comment('1 - Mensal, 2 - Anual');
             $table->string('rotulo', 20);
             $table->decimal('valor', 10, 2);
             $table->boolean('ativo', 1)->default(true);

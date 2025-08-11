@@ -85,12 +85,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             Route::get('companies/requests', 'listCompaniesRequests');
             Route::get('company/{id?}', 'listCompany');
             Route::get('company/request/{rid}', 'listCompanyRequest');
+            Route::get('company-billing/{empresa_id}', 'listCompanyBilling');
             Route::post('company', 'create');
+            Route::post('company-billing', 'saveBilling');
             Route::put('company/{id?}', 'update');
+            Route::put('company-billing', 'updateBilling');
             Route::delete('company/{id?}', 'delete');
             Route::delete('company/request/{rid}', 'deleteCompanyRequest');
-            Route::post('company/billing', 'saveBilling');
-            Route::put('company/billing', 'updateBilling');
         });
         Route::controller(Partner::class)->group(function () {
             Route::get('partners', 'list');

@@ -167,5 +167,5 @@ function resetForms() {
     $('.is-invalid').removeClass('is-invalid');
     $('.invalid-feedback').remove();
     $('.step-wizard-list li').removeClass('current-item').eq(0).addClass('current-item');
-    $('#nav-tabCompany .tab-pane').removeClass('active show').eq(0).addClass('active show');
+    $('#nav-tabFormCompany .tab-pane').removeClass('active show').eq(0).addClass('active show');
 }

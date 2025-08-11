@@ -16,9 +16,12 @@ return new class extends Migration
             $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
             $table->foreignId('client_id')->constrained('people')->onDelete('cascade');
             $table->longText('plano');
-            $table->boolean('ativo')->default(true);
+            $table->string('pagamento')->default(json_encode([]));
+            $table->boolean('ativo')->default(false);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['empresa_id', 'client_id', 'ativo', 'deleted_at']);
         });
     }
 

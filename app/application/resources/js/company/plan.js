@@ -12,7 +12,8 @@ export function init() {
     $('#modal-form-company .modal-footer #btn-next').on('click', function () {
         const activeTabId = $('#nav-tabFormCompany .tab-pane.active').next('.tab-pane').prop('id');
         if (activeTabId == 'nav-plano') {
-            if (!plansData) {
+            if (plansData == null) {
+                // Carrega os planos do seletor
                 loadPlans();
             }
             else if ($('#plano_id').val()) {
@@ -29,7 +30,27 @@ export function init() {
         buildPlan($(this).val());
     });
 }
-// Carregar os dados dos planos
+
+async function loadPlan() {
+    $('#table-plan tbody tr td.data').html('<div class="skeleton"></div>');
+    try {
+        const empresa_id = $('#form-company [name="id"]').val();
+        if (empresa_id == '') return;
+        const request = await fetch(`/api/v1/company-billing/${empresa_id}`);
+        const response = await request.json();
+        if (response.id) {
+            setPlanData(response);
+        }
+        $('.skeleton').removeClass('skeleton');
+    } catch (error) {
+        console.error('Erro ao carregar os planos de serviço:', error);
+    }
+}
+
+function setPlanData(data) {
+    $('#plano_id').val(data.plano_id);
+}
+// Carregar os dados dos planos para lista do select
 async function loadPlans() {
     try {
         const areaAtividadeId = $('[name="area_atividade_id"]').val();
@@ -53,7 +74,7 @@ async function loadPlans() {
         });
         plansData = data;
         $('#plano_id').removeClass('skeleton').html(options.join(''));
-
+        loadPlan();
     } catch (error) {
         console.error('Erro ao carregar os planos de serviço:', error);
     }
@@ -113,7 +134,7 @@ function buildPlan(pval) {
     const [pid, vid] = (pval).split('.');
     const planData = plansData.find(planoServico => planoServico.id == pid);//Extrai o plano de serviço
     const valData = planData.valor_plano_servico.find(planoServicoValor => planoServicoValor.id == vid);//Extrai o valor do plano de serviço
-    
+
     $('#table-plan tbody tr:nth-child(1) td:nth-child(3)').text(currencyFormat(valData.valor));
     $('#table-plan tbody tr:nth-child(1) td:nth-child(5)').text(currencyFormat(valData.valor));
 
