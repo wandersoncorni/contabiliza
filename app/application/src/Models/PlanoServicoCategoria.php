@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * Model de relacionamento entre PlanoServico, CategoriaServico e servico
+ * Um plano tem uma ou mais categorias que possuem um ou mais servicos
+ * 
+ */
 namespace App\Application\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,10 +28,6 @@ class PlanoServicoCategoria extends Model
     ];
 
     protected $hidden = [
-        'plano_servico_id',
-        'categoria_servico_id',
-        'servico_id',
-        'licensed_id',
         'created_at'
     ];
 
@@ -44,5 +44,10 @@ class PlanoServicoCategoria extends Model
     public function servico(): BelongsTo
     {
         return $this->belongsTo(Servico::class);
+    }
+
+    public function valorServico(): BelongsTo
+    {
+        return $this->belongsTo(ServicoValor::class, 'servico_id', 'servico_id');
     }
 }

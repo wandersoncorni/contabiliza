@@ -14,14 +14,17 @@ return new class extends Migration
 {
     Schema::create('socios', function (Blueprint $table) {
         $table->id(); // id_socio
+        $table->foreignId('client_id')->constrained('people')->cascadeOnDelete();
         $table->string('nome');
-        $table->boolean('resp_rf')->default(false); // Responsável Receita Federal
+        $table->string('email')->nullable();
         $table->string('cpf')->unique();
         $table->string('profissao')->nullable();
+        $table->string('telefone')->nullable();
         $table->string('estado_civil')->nullable();
         $table->string('regime_bens')->nullable();
         $table->decimal('participacao', 5, 2)->nullable(); // porcentagem
-        $table->decimal('pro_labore', 10, 2)->nullable();
+        $table->boolean('pro_labore')->nullable();
+        $table->boolean('resp_rf')->default(false); // Responsável Receita Federal
 
         // Endereço
         $table->string('logradouro')->nullable();
@@ -30,16 +33,11 @@ return new class extends Migration
         $table->string('bairro')->nullable();
         $table->string('cep')->nullable();
         $table->string('estado')->nullable();
-        $table->string('municipio')->nullable();
+        $table->string('localidade')->nullable();
 
         $table->timestamps();
-    });
-    // Tabela de relacionamento entre sócios e empresas
-    Schema::create('socio_empresa', function (Blueprint $table) {
-        $table->foreignId('empresa_id')->constrained('empresas', 'id')->cascadeOnDelete();
-        $table->foreignId('id_socio')->constrained('socios', 'id')->cascadeOnDelete();
-        $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
-        $table->timestamp('deleted_at')->nullable();
+
+        $table->unique(['client_id', 'cpf']);
     });
 }
 

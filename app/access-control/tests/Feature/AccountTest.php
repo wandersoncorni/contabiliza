@@ -6,6 +6,7 @@ use App\AccessControl\Models\User;
 use App\Application\Models\Person;
 use App\Logger\Models\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 
 it('Cria uma conta', function () {
     echo get_class($this);

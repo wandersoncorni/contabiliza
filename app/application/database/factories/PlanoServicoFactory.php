@@ -18,9 +18,7 @@ class PlanoServicoFactory extends Factory
     {
         return [
             'nome' => 'Plano Básico',
-            'descricao' => 'Plano básico com funcionalidades limitadas',            
-            'valor_mensal' => rand(500, 500),
-            'valor_anual' => rand(100, 300),
+            'descricao' => 'Plano básico com funcionalidades limitadas',
             'licensed_id' => 1,
             'cor' => '#ff0000',
             'posicao' => 1
