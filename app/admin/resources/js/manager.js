@@ -2,13 +2,13 @@
  * Scripts para o modulo de gerenciamento
  */
 'use strict';
-import * as clients from './clients.js';
+import * as clients from '../../../application/resources/js/clients.js';
 import * as consultants from './consultants.js';
-import * as agents from './agents.js';
+import * as agents from '../../../application/resources/js/agents.js';
 import * as companies from './companies.js';
 import * as partners from './partners.js';
-import * as portfolios from './portfolios.js';
-import * as plans from './plans.js';
+import * as portfolios from '../../../application/resources/js/portfolios.js';
+import * as plans from '../../../application/resources/js/plans.js';
 
 $(document).ready(function () {
     $(document).on('page:loaded', function (e) {
