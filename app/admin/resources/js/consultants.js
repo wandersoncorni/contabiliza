@@ -2,7 +2,7 @@
  * Scripts para pagina de consultores
  */
 'use strict';
-import * as users from './users.js';
+import * as users from '../../../application/resources/js/users.js';
 export function init() {
     const tb = loadTable();
     users.loadFilters(0, null,1);
