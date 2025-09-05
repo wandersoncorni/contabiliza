@@ -31,13 +31,19 @@
             "App\\AccessControl\\": "app/access-control/src",
             "App\\Application\\": "app/application/src",
             "App\\Logger\\": "app/logger/src",
+            "App\\Admin\\":"app/admin/src",
             "App\\AccessControl\\Database\\Factories\\": "app/access-control/database/factories",
             "App\\Application\\Database\\Factories\\": "app/application/database/factories",
+            "App\\Admin\\Database\\Factories\\": "app/admin/database/factories",
             "App\\AccessControl\\Database\\Seeders\\": "app/access-control/database/seeders",
             "App\\Application\\Database\\Seeders\\": "app/application/database/seeders",
+            "App\\Admin\\Database\\Seeders\\": "app/admin/database/seeders",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },        
+        "files": [
+            "app/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

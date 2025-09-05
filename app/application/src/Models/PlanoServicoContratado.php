@@ -3,11 +3,9 @@
 namespace App\Application\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PlanoServicoContratado extends Model
 {
-    use SoftDeletes;
 
     protected $table = "planos_servicos_contratados";
 
@@ -16,6 +14,7 @@ class PlanoServicoContratado extends Model
         'client_id',
         'empresa_id',
         'plano',
+        'pagamento',
         'ativo',
     ];
 
@@ -27,5 +26,6 @@ class PlanoServicoContratado extends Model
 
     protected $casts = [
         'plano' => 'array',
+        'pagamento' => 'array',
     ];
 }

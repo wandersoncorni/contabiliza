@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\AccessControl\Models\User;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Foundation\AliasLoader;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -65,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
 
             // Monta o caminho completo da Model
             return "App\\$module\\Models\\$modelName";
+        });
+
+        Blade::directive('manifest', function ($expression) {
+            return "<?php echo manifest_asset($expression); ?>";
         });
     }
 }

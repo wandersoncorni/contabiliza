@@ -18,5 +18,8 @@ class AreaAtividadeSeeder extends Seeder
         AreaAtividade::factory()->create([
             'descricao' => 'Serviço',
         ]);
+        AreaAtividade::factory()->create([
+            'descricao' => 'Comércio e Serviço',
+        ]);
     }
 };

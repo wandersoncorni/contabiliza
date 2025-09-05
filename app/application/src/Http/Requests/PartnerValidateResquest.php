@@ -16,7 +16,11 @@ class PartnerValidateResquest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $data = ['client_id' => session('client_context', auth()->user()->person->id),];
+        $data = [
+            'client_id' => session('client_context', auth()->user()->person->id),
+            //'regime_bens' => $this->estado_civil == 2 ? $this->regime_bens : null
+        ];
+        
         if($this->participacao){
             $data['participacao'] = preg_replace('/[^0-9.]/', '', $this->participacao);
         }
@@ -39,6 +43,7 @@ class PartnerValidateResquest extends FormRequest
         $required = [            
             'nome' => ['string','max:255'],
             'cpf' => ['required','string', new \App\Rules\Cpf()],
+            'empresa_id' => ['integer','exists:empresas,id'],
             'estado_civil' => ['integer','exists:estados_civis,id'],
             'profissao' => ['string','max:255'],
             'participacao' => ['numeric','min:0','max:100'],
@@ -47,14 +52,12 @@ class PartnerValidateResquest extends FormRequest
             'bairro' => ['string','max:255'],
             'cep' => ['string','max:255'],
             'estado' => ['string','max:2'],
-            //Campo extra para associar o sócio à empresa
-            'company_id' => ['integer','exists:empresas,id'],
         ];
         $notRequired = [          
             'pro_labore' => ['boolean'],
             'numero' => ['string','max:50'],
             'complemento' => ['string','max:255'],
-            'regime_bens' => ['integer','exists:regimes_bens,id','required_if:estado_civil,2','in:1,2,3,4,5'],
+            'regime_bens' => ['numeric','exists:regimes_bens,id','required_if:estado_civil,2','in:1,2,3,4,5'],
             'resp_rf' => ['boolean'],
         ];
 
@@ -102,6 +105,7 @@ class PartnerValidateResquest extends FormRequest
             'estado.required' => 'O campo Estado é obrigatório.',
             'regime_bens.required' => 'O campo Regime de Bens é obrigatório quando o Estado Civil for Casado.',
             'regime_bens.in' => 'O campo Regime de Bens deve ser uma das opções da lista.',
+            'regime_bens.required_if' => 'O campo Regime de Bens é obrigatório quando o Estado Civil for Casado.',
         ];
     }
 }

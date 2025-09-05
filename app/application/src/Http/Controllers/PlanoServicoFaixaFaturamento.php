@@ -49,7 +49,8 @@ class PlanoServicoFaixaFaturamento
         $data = $validation->validated();
 
         $query  = PlanoServicoFaixaFaturamentoModel::select('plano_servico_id', 'faixa_faturamento_id', 'valor')
-        ->with('faixaFaturamento')
+        ->with('faixaFaturamento:id,descricao,regime_tributario_id')        
+        ->with('faixaFaturamento.regimeTributario:id,descricao')
         ->where('plano_servico_id', $data['pid'])
         ->where('faixa_faturamento_id', $data['ffid'])
         ->where('ativo', true);

@@ -1,8 +1,8 @@
 <?php
 
-namespace Database\Factories;
+namespace App\Application\Database\Factories;
 
-use App\Models\NaturezaJuridica;
+use App\Application\Models\NaturezaJuridica;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class NaturezaJuridicaFactory extends Factory

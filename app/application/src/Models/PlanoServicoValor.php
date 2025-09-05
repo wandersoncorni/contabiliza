@@ -19,6 +19,7 @@ class PlanoServicoValor extends Model
         'plano_servico_id',
         'regime_tributario_id',
         'area_atividade_id',
+        'periodicidade_id',
         'rotulo',
         'valor',
     ];

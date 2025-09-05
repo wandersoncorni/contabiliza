@@ -24,7 +24,7 @@ return new class extends Migration
         });
         Schema::create('naturezas_juridicas', function (Blueprint $table) {
             $table->id();
-            $table->string('codigo', 5)->unique();
+            $table->string('codigo', 5);
             $table->string('descricao');
             $table->timestamps();
         });
@@ -34,12 +34,12 @@ return new class extends Migration
             $table->foreignId('faixa_faturamento_id')->constrained('faixas_faturamento')->cascadeOnDelete();
             $table->foreignId('natureza_juridica_id')->constrained('naturezas_juridicas')->cascadeOnDelete();
             $table->foreignId('cnae_id')->constrained('cnae')->cascadeOnDelete();
+            $table->foreignId('area_atividade_id')->length(1)->constrained('areas_atividade')->comment('1 - Comércio, 2 - Serviços');
+            $table->foreignId('regime_tributario_id')->length(1)->constrained('regimes_tributarios')->comment('1 - Simples Nacional, 2 - Lucro Presumido');
             $table->string('nome_fantasia')->unique();
             $table->string('razao_social')->unique();
             $table->string('cnpj')->unique()->nullable();
             $table->decimal('capital_social', 15, 2);
-            $table->tinyInteger('area_atividade_id')->length(1)->comment('1 - Comércio, 2 - Serviços');
-            $table->tinyInteger('regime_tributario_id')->length(1)->comment('1 - Simples Nacional, 2 - Lucro Presumido');
 
             // Endereço
             $table->string('cep');
@@ -57,7 +57,7 @@ return new class extends Migration
             $table->string('tipo_inscricao')->nullable();  
             $table->string('numero_inscricao')->nullable();
             //Estado da solicitação de cadastro denova empresa
-            $table->tinyInteger('status')->length(1)->default(2)->comment('0 - rejeitado, 1 - aprovado, 2 - pendente, 3 - cancelado');
+            $table->tinyInteger('status')->length(1)->default(4)->comment('0 - rejeitado, 1 - aprovado, 2 - pendente, 3 - cancelado, 4 - elaboração');
             //Situação cadastral
             $table->tinyInteger('situacao')->length(1)->default(4)->comment('0 - nula, 1 - ativa, 2 - suspensa, 3 - baixada, 4 - em processo de inscrição');
 

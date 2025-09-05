@@ -1,0 +1,1 @@
+(()=>{"use strict";$(document).ready((function(){loadUsersTable("#tb-agents","/api/v1/agents")}))})();

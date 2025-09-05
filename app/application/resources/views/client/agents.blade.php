@@ -60,4 +60,4 @@
         </div>
     </div>
 </div>
-<script src="{{ asset('js/agents.js') }}"></script>
+<script src="@manifest('agents.js')"></script>

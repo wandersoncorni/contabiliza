@@ -66,7 +66,14 @@ export function getAddress(field) {
             if (!response.ok) {
                 return;
             }
+            $(`[data-address="${seletor}"]`).siblings('.invalid-feedback').remove();
+            $(`[data-address="${seletor}"].is-invalid`).removeClass('is-invalid');
             const data = await response.json();
+            if(data.erro){
+                addInvalidFeedback('[name="cep"]', 'CEP inválido!');
+                $(`[data-address="${seletor}"]:not([name="cep"])`).val('');
+                return;
+            }
             $(`[data-address="${seletor}"]`).each(function () {
                 if ($(this).prop('name').includes('estado')) {
                     $(this).children('option').each(function () {

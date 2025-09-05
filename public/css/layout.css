@@ -164,3 +164,8 @@ div.skeleton {
     background-color: #e0e0e0;
   }
 }
+
+.badge-08 {
+	font-size: 1em !important;
+	padding: 0.6em;
+}

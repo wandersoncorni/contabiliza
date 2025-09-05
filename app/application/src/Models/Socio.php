@@ -12,6 +12,7 @@ class Socio extends Model
     protected $fillable = [
         'id',
         'client_id',
+        'empresa_id',
         'bairro',
         'cep',
         'complemento',

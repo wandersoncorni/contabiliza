@@ -99,6 +99,7 @@ class PlanosSeeder extends Seeder
                     'licensed_id' => 1,
                     'plano_servico_id' => $plan->id,
                     'area_atividade_id' => $aid, // 1 - Comércio, 2 - Serviços
+                    'periodidade_id' => 1,// 1 - Mensal
                     'rotulo' => 'Mensal',
                     'valor' => $valorPlano,
                 ]);
@@ -106,6 +107,7 @@ class PlanosSeeder extends Seeder
                     'licensed_id' => 1,
                     'plano_servico_id' => $plan->id,
                     'area_atividade_id' => $aid, // 1 - Comércio, 2 - Serviços
+                    'periodidade_id' => 2,// 2 - Anual
                     'rotulo' => 'Anual',
                     'valor' => (($valorPlano * 12) - ($valorPlano * 12 * 0.1)),
                 ]);

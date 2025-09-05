@@ -82,20 +82,25 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         //Rotas para criar, editar e cadastrar uma empresa
         Route::controller(Company::class)->group(function () {
             Route::get('companies', 'list');
-            Route::get('companies/requests', 'listCompaniesRequests');
             Route::get('company/{id?}', 'listCompany');
             Route::get('company/request/{rid}', 'listCompanyRequest');
+            Route::get('company/billing/{empresa_id}', 'listCompanyBilling');
             Route::post('company', 'create');
             Route::put('company/{id?}', 'update');
+
+            Route::put('company-billing', 'saveBilling');
+            Route::post('company-billing', 'saveBilling');
+
+            Route::post('company-payment', 'savePayment');
+            Route::put('company-payment', 'savePayment');
+
             Route::delete('company/{id?}', 'delete');
-            Route::delete('company/request/{rid}', 'deleteCompanyRequest');
-            Route::post('company/billing', 'saveBilling');
-            Route::put('company/billing', 'updateBilling');
         });
         Route::controller(Partner::class)->group(function () {
             Route::get('partners', 'list');
             Route::get('partners/{eid?}', 'listByCompany');//Lista os socios de uma empresa
             Route::get('partner/{id}', 'listPartner');
+            Route::get('partner-search', 'searchPartner');
             Route::post('partner', 'create');
             Route::put('partner', 'update');
             Route::delete('partner/{id?}', 'delete');

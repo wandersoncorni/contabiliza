@@ -2,18 +2,28 @@
  * Scripts para pagina de empresas
  */
 'use strict';
-import { init as companyFormInit, saveCompany } from './company_form.js';
-import { init as partnerInit, savePartner } from './partner.js';
-import { init as planInit } from './plan.js';
+import { 
+    init as companyFormInit, 
+    saveCompany, 
+    setCompanyData, 
+    checkCompanyForm, 
+    hasChanged as companyHasChanged, 
+    listarRegimesTributarios, 
+    listarCNAEs, 
+    listarFaixasFaturamento,
+    listarAreasAtividade,
+    listarNaturezasJuridicas } from './company_form.js';
+import { init as partnerInit, savePartner, checkPartnersForm, listPartners, hasChanged as partnerHasChanged } from './partner.js';
+import { init as planInit, savePlan, loadPlans, checkPlanForm, setPlanData, hasChanged as planHasChanged } from './plan.js';
+import { savePayment, loadPayment, hasChanged as paymentHasChanged } from './payment.js';
 import * as stepWizard from './step-wizard.js';
 import { currencyFormat } from '../helpers.js';
 
-export let newCompaniesList = [];
+export let companiesList = [];
 
-$(document).ready(function () {
+$(function () {
     // Carrega as tabelas
     loadCompaniesTable();
-    loadNewCompaniesTable();
 
     companyFormInit();
     partnerInit();
@@ -30,39 +40,74 @@ $(document).ready(function () {
     }).on('hide.bs.modal', function () {
         clearInterval(live);
     });
-
-    $(document).on('click', '#btn-next', function () {
+    // Avança os passos
+    $('#btn-next').on('click', function () {
+        const activeTabId = $('#nav-tabFormCompany .tab-pane.active').prop('id');
+        if (activeTabId == 'nav-company') {
+            if (!checkCompanyForm()) return;
+            listPartners();
+        }
+        else if (activeTabId == 'nav-partners') {
+            if (!checkPartnersForm()) return;
+            loadPlans();
+        }
+        else if (activeTabId == 'nav-plano') {
+            if (!checkPlanForm()) return;
+            loadPayment();
+        }
         stepWizard.next();
     });
-
-    $(document).on('click', '#btn-prev', function () {
+    // Volta os passos
+    $('#btn-prev').on('click', function () {
         stepWizard.prev();
     });
     // Preenche o form para edição
-    $(document).on('click', '#tb-new-companies tbody tr td:last-child div button', function () {
-        if ($(this).data('action') == 'edit') {
+    $(document).on('click', '#tb-companies tbody tr td:last-child div button', function () {
+        const action = $(this).data('action');
+        if (action == 'edit') {
             $('#modal-form-company').modal('show');
-            const companyData = newCompaniesList.find(c => c.id == $(this).data('idCompany'));
-            Object.keys(companyData).forEach(campo => {
-                const field = $(`#form-company [name="${campo}"]`);
-                if (field.is('select')) {
-                    (async () => await setSelectValue(campo, companyData[campo]))();
-                    return;
-                }
-
-                if (campo == 'capital_social') {
-                    field.val(currencyFormat(companyData[campo]));
-                    return;
-                }
-
-                field.val(companyData[campo]);
-                field.removeAttr('data-changed');
-            });
+            const companyData = companiesList.find(c => c.id == $(this).data('idCompany'));
+            setCompanyData(companyData)
             return;
         }
+        if (action == 'delete') {
+            Swal.fire({
+                title: 'Deseja realmente excluir essa empresa?',
+                text: "Essa empresa e todos os seus dados serao excluídos permanentemente!",
+                icon: 'warning',
+                showDenyButton: true,
+                confirmButtonText: 'Sim',
+                denyButtonText: 'Não'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/v1/company/${$(this).data('idCompany')}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                            'Accept': 'application/json',
+                        }
+                    }).then(async response => {
+                        const data = await response.json();
+                        if (response.ok) {
+                            loadCompaniesTable();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Empresa excluida com sucesso',
+                            });
+                            return;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao excluir empresa',
+                            text: data.error ?? 'Erro desconhecido',
+                        });
+                    });
+                }
+            });
+        }
     });
-
-    $('#btn-save').click(function () {
+    // Salva os dados dos forms do wizard
+    $('#btn-save').on('click', function () {
         const activeNav = $('#nav-tabFormCompany .tab-pane.active').attr('id');
         if (activeNav == 'nav-company') {
             saveCompany();
@@ -71,10 +116,127 @@ $(document).ready(function () {
             savePartner();
             return;
         }
+        if (activeNav == 'nav-plano') {
+            savePlan();
+            return;
+        }
+        if (activeNav == 'nav-cobranca') {
+            savePayment();
+            return;
+        }
+    });
+    // Ações do botal fechar do modal
+    $('#btn-close').on('click', function () {
+        const close = () => {
+            $('#modal-form-company').modal('hide');
+            resetForms();
+        }
+
+        const modalAlert = (msg) => {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atenção',
+                text: msg,
+                showDenyButton: true,
+                confirmButtonText: 'Sim',
+                denyButtonText: 'Não'
+            }).then((result) => {
+                if (result.isConfirmed) close();
+            })
+        }
+
+        const activeNav = $('#nav-tabFormCompany .tab-pane.active').attr('id');
+        const msg = (form = 'de um ou mais formulários') => `Os dados ${form} foram alterados, se fechar fechar perderá as alterações. Deseja prosseguir?`
+        if (activeNav == 'nav-company' && companyHasChanged()) {
+            modalAlert(msg('da empresa'));
+            return;
+        }
+        if (activeNav == 'nav-partners' && partnerHasChanged()) {
+            modalAlert(msg('de um ou mais sócios'));
+            return;
+        }
+        if (activeNav == 'nav-plano' && planHasChanged()) {
+            modalAlert(msg('do plano'));
+            return;
+        }
+        if (activeNav == 'nav-cobranca' && paymentHasChanged()) {
+            modalAlert(msg('da cobrança'));
+            return;
+        }
+        close();
+    });
+
+    $(document).on('click', '.company-info', function () {
+        $('#modalCompanyInfo').modal('show');
+        const companyData = companiesList.find(c => c.id == $(this).data('id'));
+        setInfoCompany(companyData);
     });
 });
+// Insere os dados no modal de infomações da empresa
+function setInfoCompany(data) {
+    Object.keys(data).map((key) => {
+        let val = data[key];
+        if (key == 'regime_tributario_id') {
+            (() => {
+                listarRegimesTributarios().then(() => {
+                    $(`#modalCompanyInfo #regime_tributario`).html(
+                        $(`#modal-form-company #regime_tributario option[value="${val}"]`).text()
+                    );
+                });
+            })();
+            return
+        }
+        else if(key == 'regime_bens') {
+            (()=>{
+                listarCNAEs().then(() => {
+                    $(`#modalCompanyInfo #cnae`).append(
+                        () => {
+                            const list = $('<ul />',{class:'list-group list-group-flush'});
+                            val.map( id => {
+                                list.append($('<li />', {class:'list-group-item', text: $(`#modal-form-company #cnae option[value="${id}"]`).text()}));
+                            });
+                            return list;
+                        }
+                       
+                    );
+                })
+            })();
+        }
+        else if (key == 'area_atividade_id') {
+            (() => {
+                listarAreasAtividade().then(() => {
+                    $(`#modalCompanyInfo #area_atividade`).html(
+                        $(`#modal-form-company #area_atividade option[value="${val}"]`).text()
+                    );
+                });
+            })();
+        }
+        else if (key == 'faixa_faturamento_id') {
+            (() => {
+                listarFaixasFaturamento().then(() => {
+                    $(`#modalCompanyInfo #faixa_faturamento`).html(
+                        $(`#modal-form-company #faixa_faturamento option[value="${val}"]`).text()
+                    );
+                });
+            })();
+            return
+        }
+        else if (key == 'natureza_juridica_id') {
+            (() => {
+                listarNaturezasJuridicas().then(() => {
+                    $(`#modalCompanyInfo #natureza_juridica`).html(
+                        $(`#modal-form-company #natureza_juridica option[value="${val}"]`).text()
+                    );
+                });
+            })();
+        }
+        else if(key == 'capital_social') val = currencyFormat(val);
+        
+        $(`#modalCompanyInfo #${key}`).html(val ?? '&nbsp;');
+    });
+}
 // Carrega a lista de empresas do cliente
-function loadCompaniesTable() {
+export function loadCompaniesTable() {
     if ($('.dataTable').length) $('#tb-companies').DataTable().destroy();
     //return new DataTable('#tb-companies', {
     $('#tb-companies').DataTable({
@@ -87,45 +249,38 @@ function loadCompaniesTable() {
                     callback({ data: [] });
                     return;
                 }
-                const data = await response.json();
-                return callback({ data: data });
+                companiesList = await response.json();
+                return callback({ data: companiesList });
             });
         },
         searching: false,
         order: [],
         columns: [
             { data: 'cnpj' },
-            { data: 'nome' },
-            { data: () => { return '<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-form-company">Criar</button>' } }
-        ],
-        columnDefs: [
-            { targets: [1], orderable: true },
-            { targets: [2], orderable: false },
-            { targets: [0], type: 'string', orderable: false }
-        ]
-    });
-}
-// Carrega a lista de solicitações de criação de empresas
-export function loadNewCompaniesTable() {
-    $('#tb-new-companies').DataTable().destroy();
-    $('#tb-new-companies').DataTable({
-        ajax: function (data, callback) {
-            fetch('/api/v1/companies/requests', {
-                method: 'GET',
-            }).then(async response => {
-                if (!response.ok) {
-                    callback({ data: [] });
-                    return;
+            {
+                data: (data) => {
+                    return $(`<a />`, { href: "#", class: 'text-info fw-bolder d-flex align-middle company-info', 'data-id': data.id, title: 'Informações da empresa' }).append([
+                        $(`<span />`, { class: 'link', text: data.nome_fantasia }),
+                        $(`<i />`, { class: 'heroicon heroicon-information-circle ms-2' }),
+                    ]).prop('outerHTML');
                 }
-                const data = await response.json();
-                newCompaniesList = data;
-                return callback({ data: data });
-            });
-        },
-        columns: [
-            { data: 'nome_fantasia' },
-            { data: 'status_label' },
-            { data: 'situacao_label' },
+            },
+            {
+                data: (data) => {
+                    let types = ['danger', 'success', 'warning', 'primary', 'info'];
+                    let labels = ['Rejeitado', 'Aprovado', 'Pendente', 'Cancelado', 'Elaboração'];
+
+                    return $('<span />', { class: `badge badge-08 bg-${types[data.status]}` }).append(labels[data.status]).prop('outerHTML');
+                }
+            },
+            {
+                data: (data) => {
+                    let types = ['danger', 'success', 'warning', 'primary', 'info'];
+                    let labels = ['Nula', 'Ativa', 'Suspensa', 'Baixada', 'Em processo de inscrição'];
+
+                    return $('<span />', { class: `badge badge-08 bg-${types[data.status]}` }).append(labels[data.situacao]).prop('outerHTML');
+                }
+            },
             {
                 data: (data) => {
                     return $('<div />').append([
@@ -140,26 +295,10 @@ export function loadNewCompaniesTable() {
             }
         ],
         columnDefs: [
-            { targets: [0, 1], orderable: true, searchable: true },
-            { targets: [2], orderable: false, searchable: false },
+            { targets: [1], orderable: true },
+            { targets: [2], orderable: false },
+            { targets: [0], type: 'string', orderable: false }
         ]
-    });
-}
-//Insere os dados no select
-const interals = [];
-async function setSelectValue(select, value) {
-    return new Promise((resolve) => {
-        const start = Date.now();
-        const interval = setInterval(() => {
-            if ($(`[name="${select}"] option`).length) {
-                clearInterval(interval);
-                $(`[name="${select}"]`).val(value).trigger('change').removeAttr('data-changed');
-                resolve(true);
-            }
-            if (Date.now() - start > 30000) {
-                clearInterval(interval);
-            }
-        }, 500);
     });
 }
 
@@ -167,5 +306,25 @@ function resetForms() {
     $('.is-invalid').removeClass('is-invalid');
     $('.invalid-feedback').remove();
     $('.step-wizard-list li').removeClass('current-item').eq(0).addClass('current-item');
-    $('#nav-tabCompany .tab-pane').removeClass('active show').eq(0).addClass('active show');
+    $('#nav-tabFormCompany .tab-pane').removeClass('active show').eq(0).addClass('active show');
+    $('#nav-tabFormCompany form').trigger('reset');
+    setPlanData({
+        plano: {
+            valor: '',
+            pro_labore_obs: '',
+            valor_unitario_pro_labore: '',
+            total_socios: '',
+            valor_unitario_prolabore: '',
+            total_valor_prolabore: '',
+            folha_pagamento_obs: '',
+            valor_unitario_folha_pagamento: '',
+            total_folha_pagamento: '',
+            valor_folha_pagamento: '',
+            faixa_faturamento_obs: '',
+            valor_faixa_faturamento: ''
+        }
+    });
+    $('#partners-container form').remove();
+    $('#btn-prev').prop('disabled', true);
+    $('#btn-next').prop('disabled', false);
 }

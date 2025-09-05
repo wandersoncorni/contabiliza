@@ -63,4 +63,9 @@ class PlanoServico extends Model
     {
         return $this->hasMany(ServicoValor::class, 'plano_servico_id');
     }
+
+    public function categorias(): HasMany
+    {
+        return $this->hasMany(PlanoServicoCategoria::class, 'plano_servico_id', 'id');
+    }
 }
