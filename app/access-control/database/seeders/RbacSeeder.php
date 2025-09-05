@@ -52,13 +52,86 @@ class RbacSeeder extends Seeder
                 'label' => 'agent',
                 'parent_id' => 5
             ],
+            // id 7
+            [
+                'name' => 'Gerente Administrativo',
+                'label' => 'admin_manager',
+                'parent_id' => 2
+            ],
+            // id 8
+            [
+                'name' => 'Consultor Administrativo',
+                'label' => 'admin_consultant',
+                'parent_id' => 7
+            ],
+            // id 9
+            [
+                'name' => 'Gerente Legal',
+                'label' => 'legal_manager',
+                'parent_id' => 2
+            ],
+            // id 10
+            [
+                'name' => 'Consultor Legal',
+                'label' => 'legal_consultant',
+                'parent_id' => 9
+            ],
+            // id 11
+            [
+                'name' => 'Gerente Pessoal',
+                'label' => 'personnel_manager',
+                'parent_id' => 2
+            ],
+            // id 12
+            [
+                'name' => 'Consultor Pessoal',
+                'label' => 'personnel_consultant',
+                'parent_id' => 11
+            ],
+            // id 13
+            [
+                'name' => 'Gerente Fiscal', 
+                'label' => 'fiscal_manager',
+                'parent_id' => 2
+            ],
+            // id 14
+            [
+                'name' => 'Consultor Fiscal',
+                'label' => 'fiscal_consultant',
+                'parent_id' => 13
+            ],
+            // id 15
+            [
+                'name' => 'Generente Contábil',
+                'label' => 'accounting_manager',
+                'parent_id' => 2
+            ],
+            // id 16
+            [
+                'name' => 'Consultor Contábil',
+                'label' => 'accounting_consultant',
+                'parent_id' => 15
+            ],
+            // id 17
+            [
+                'name' => 'Gerente Comercial',
+                'label' => 'commercial_manager',
+                'parent_id' => 2
+            ],
+            // id 18
+            [
+                'name' => 'Consultor Comercial',
+                'label' => 'commercial_consultant',
+                'parent_id' => 17
+            ],
         ];
         foreach ($roles as $role) {
             Role::factory()->create($role);
         }
 
         // Popula a tabela de recursos/ativos (assets)
-        $assets = [            
+        $assets = [
+            // Ações globais
             ['name' => 'Ação irrestrita', 'label' => 'any'], // id 1
             ['name' => 'Perfil administrador', 'label' => 'admin'], // id 2
             ['name' => 'Perfil gerente', 'label' => 'manager'], // id 3
@@ -72,7 +145,7 @@ class RbacSeeder extends Seeder
             ['name' => 'Mudar estado do perfil consultor', 'label' => 'change_state_consultant'], // id 11        
             ['name' => 'Mudar estado do perfil cliente', 'label' => 'change_state_client'], // id 12
             ['name' => 'Mudar estado do perfil agent', 'label' => 'change_state_agent'], // id 13
-            
+            // Rotas
             ['name' => 'Rota para usuarios', 'label' => 'users_route'], // id 14
             ['name' => 'Rota para clientes', 'label' => 'clients_route'], // id 15
             ['name' => 'Rota para agentes', 'label' => 'agents_route'], // id 16

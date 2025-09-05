@@ -7,6 +7,7 @@
 import { formatPercentage, removeInvalidFeedback, addInvalidFeedback } from '../helpers.js';
 import { createPartnerForm } from './partner_form.js';
 
+let partnersData = [];
 export function init() {
     // Cria o formulário de sócio
     createPartnerForm();
@@ -19,11 +20,12 @@ export function init() {
     $(document).on('input', '.participacao', function () {
         progressUpdate();
     });
+
     $(document).on('click', '.remove-partner', function () {
         if ($('.accordion').length == 1) {
             Swal.fire({
                 title: 'Atenção',
-                text: 'O cadastro de empresas deve ter pelo menos um sốcio.',
+                text: 'O cadastro de empresas deve ter pelo menos um sócio.',
                 icon: 'warning',
             });
             return;
@@ -31,12 +33,25 @@ export function init() {
         $(this).closest('.accordion').remove();
         progressUpdate();
     });
-    $(document).on('click', '#btn-next', function () {
-        if ( $('#nav-tabFormCompany .tab-pane.active').next('.tab-pane').prop('id') == 'nav-partners' && $('#form-company [name="id"]').val()) {
-            listPartners();
+    //Busca de sócio pela API ao clicar no botão de busca
+    $('#partners-container').on('input', '[name="cpf"]', function () {
+        const val = $(this).val().replace(/[^0-9]/g, '');
+        if (val.length < 11) return;
+        const form = $(this).parents('form');
+        form.find('input, select').each(function () {
+            $(this).addClass('skeleton').prop('disabled', true);
+            
+            if(!['cpf', 'resp_rf', 'pro_labore'].includes($(this).attr('name'))) {
+                $(this).val('');
+            }
+        });
+        $('[name="resp_rf"]:first, [name="pro_labore"]:first').click();        
+        serachPartner(form.attr('id'),val);
+        $('.skeleton').removeClass('skeleton').prop('disabled', false);
+        if(!$(`${form} [name="estado_civil"]`).val() == 2) {
+            $(`${form}[name="regimes_bens"]`).prop('disabled', true);
         }
     });
-
 }
 /**
  * @function progressUpdate
@@ -61,40 +76,44 @@ function progressUpdate() {
  * Carrega a lista de sócios da empresa
  */
 export function listPartners() {
-    if ($('.accordion').length) {
-        const accordion = $('.accordion:first .accordion-button');
-        accordion.click();
-        $(`.accordion:first .accordion-body input[type="text"], 
-            .accordion:first .accordion-body select, 
-            .accordion:first .accordion-body [type="email"]`).each(function () {
-            $(this).addClass('skeleton').prop('disabled', true);
-        });
-        fetch(`/api/v1/partners/${$('#form-company [name="id"]').val()}`, {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-        }).then(async response => {
-            const data = await response.json();
+    $('#partners-container form').remove();
+    createPartnerForm();
+    progressUpdate();
 
-            $('.skeleton').removeClass('skeleton').prop('disabled', false);
-            $('#add-partner').prop('disabled', false);
+    fetch(`/api/v1/partners/${$('#form-company [name="id"]').val()}`, {
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    }).then(async response => {
+        const data = await response.json();
 
-            if (!response.ok || !data || data.length == 0) {
-                return;
+        $('.skeleton').removeClass('skeleton').prop('disabled', false);
+        $('#add-partner').prop('disabled', false);
+
+        if (!response.ok || !data) {
+            return;
+        }
+        // Se nenhuma empresa cadastrada abre o formulário
+        if (data.length == 0) {
+            if ($('.accordion').length) {
+                const accordion = $('.accordion:first .accordion-button');
+                accordion.click();
             }
-            data[0].socios.forEach((socio, index) => {
-                const formId = `#form-partner-${index + 1}`;
-                if($(formId).length == 0) createPartnerForm();
-                $(`${formId} .accordion .accordion-header .accordion-button label`).text(socio.nome);
-                const form = $(formId);
-                fillForm(form, socio);
-            });
-
-            progressUpdate();
-        }).catch(error => {
-            console.error('Erro ao carregar sócios:', error);
+            return;
+        }
+        // Insere os dados no formulário
+        data.forEach((socio, index) => {
+            const formId = `#form-partner-${index + 1}`;
+            if ($(formId).length == 0) createPartnerForm();
+            $(`${formId} .accordion .accordion-header .accordion-button label`).text(socio.nome);
+            const form = $(formId);
+            fillForm(formId, socio);
         });
-    }
+        partnersData = data;
+        progressUpdate();
+    }).catch(error => {
+        console.error('Erro ao carregar sócios:', error);
+    });
 }
 /**
  * Insere os dados no formulário
@@ -103,87 +122,60 @@ export function listPartners() {
  */
 function fillForm(form, data) {
     Object.keys(data).forEach(key => {
-        if (['pro_labore', 'resp_rf'].includes(key)) {
-            form.find(`[name="${key}"][value="${data[key]}"]`).prop('checked', true);
-            return;
+        $(`${form} [name="${key}"]`).val(data[key]);
+        if (key == 'estado_civil') {
+            const disabled = $(`${form} [name="estado_civil"]`).val() == 2 ? false : true;
+            $(`${form} [name="regime_bens"]`).prop('disabled', disabled).val('');
         }
-        form.find(`[name="${key}"]`).val(data[key]);
-        if(key == 'participacao') form.find(`[name="${key}"]`).focus();
+        if (key == 'participacao') $(`${form} [name="${key}"]`).focus().blur();
     });
 }
 
 export function savePartner() {
-    let participacao = 0;
-    //Configura o formulário
-    $('[id^="form-partner"]').each(function () {
-        const formId = $(this).attr('id');
-        removeInvalidFeedback(`#${formId}`);
-        $(`#${formId} :required`).each(function () {
-            if ($(this).val() == '') {
-                addInvalidFeedback(this);
-            }
-        });
-        if ($(`#${formId} [name="estado_civil"]`).val() == 2 && $(`#${formId} [name="regime_bens"]`).val() == '') {
-            addInvalidFeedback($(`#${formId} [name="regime_bens"]`), 'Regime de bens é obrigatório para casados.');
-        }
-        //Soma as participações
-        participacao += parseFloat($(`#${formId} [name="participacao"]`).val().replace(/[^0-9.]/g, '')) ?? 0;
-
-        if ($(`#${formId} .is-invalid`).length > 0 && $(`#${formId} .accordion-button`).hasClass('collapsed')) {
-            $(`#${formId}  .accordion-button`).click();
+    $('.alert').remove();
+    for (const form of $('[id^="form-partner"]')) {
+        const formId = $(form).attr('id');
+        let isValid = false;
+        removeInvalidFeedback(`[id="${formId}"]`);
+        // Valida o formulario
+        if ($(`#${formId} [name="estado_civil"]`).val() == 2) {
+            $(`#${formId} [name="regime_bens"]`).prop('required', true);
         }
 
-    });
+        if ($(`#${formId}`)[0].checkValidity() == false) {
+            $(`#${formId} [required=""]`).each(function () {
+                if ($(`#${formId} [name="${$(this).attr('name')}"]`).val() == '') {
+                    addInvalidFeedback(`[name="${$(this).attr('name')}"]`);
+                }
+            });
+            Swal.fire({
+                title: 'Atenção',
+                text: 'Verifique os erros no formulário!',
+                icon: 'warning',
+            });
+            continue;
+        }
 
-    if ($(`[id^="form-partner"] .is-invalid`).length > 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Atenção',
-            text: 'Existe um ou mais campos inválidos.',
-        });
-        return;
-    }
-    // Verifica se a soma das participações é igual a 100%
-    if (participacao != 100) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Atenção',
-            text: 'A soma das participações deve ser igual a 100%',
-        });
-        return;
-    }
+        // Só envia o form se for editado ou se for novo
+        const changedFields = formHasChanged(formId);
+        if ($(`#${formId} [name="id"]`).val() != '' && !changedFields.length) {
+            continue;
+        }
 
-    if($('#form-company [name="id"]').val() == '') {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Atenção',
-            text: 'Os dados da empresa devem ser salvos antes de salvar os sócios.',
-        });
-        return;
-    }
-
-    $('[id^="form-partner"]').each(function () {
-        const formId = $(this).attr('id');
+        // Configura o formulário
         let formData = null;
-        $(`#${formId} .alert`).remove();
-        // Envia os dados via POST
-        if($(`#${formId} [name="id"]`).val() == ''){
+        if (changedFields.length == 0) {
             formData = new FormData($(`#${formId}`)[0]);
-            $(`#${formId} .alert`).remove();
-            formData.append('company_id', $('#form-company [name="id"]').val());
+            formData.append('empresa_id', $(`#form-company [name="id"]`).val());
         }
-        // Envia os dados via PUT
-        else if ($(`#${formId} [data-changed="true"]`).length) {
+        // Cria um form só com os campos alterados
+        else {
             formData = new FormData();
             formData.append('id', $(`#${formId} [name="id"]`).val());
             formData.append('_method', 'PUT');
-            $(`#${formId} [data-changed="true"]`).each(function () {
-                formData.append($(this).attr('name'), $(this).val());
-            });
-        }
-
-        if (formData == null) {
-            return;
+            for (const field of changedFields) {
+                formData.append(field, $(`#${formId} [name="${field}"]`).val());
+            }
         }
 
         fetch('/api/v1/partner', {
@@ -203,8 +195,18 @@ export function savePartner() {
                         'Sócio salvo com sucesso!'
                     )
                 );
-                fillForm($(`#${formId}`), data);
-                $(`#${formId} [data-changed="true"]`).removeAttr('data-changed');
+                Swal.fire({
+                    title: 'Sucesso',
+                    text: 'Sócio salvo com sucesso!',
+                    icon: 'success',
+                })
+                fillForm(`#${formId}`, data);
+                if (partnersData.length == 0) {
+                    partnersData.push(data);
+                    progressUpdate();
+                    return;
+                }
+                partnersData.filter((partner, index) => { partner.id == data.id ? partnersData[index] = data : true });
                 return;
             }
 
@@ -224,8 +226,93 @@ export function savePartner() {
                     )
                 );
             }
+            Swal.fire({
+                title: 'Erro ao salvar sócio',
+                text: data.error ?? 'Verifique os erros no formulário!',
+                icon: 'error',
+            });
         }).catch(error => {
             console.error(error);
         });
+    }
+}
+/**
+ * Verifica se os formulários dos sócios foram preenchidos ou alterados antes de prosseguir
+ * para o próximo passo
+ */
+export function checkPartnersForm() {
+    let isValid = true;
+    const forms = $('[id^="form-partner"]');
+    const naoSalvos = $('[id^="form-partner"] [name="id"][value=""]').length;
+    if (naoSalvos) {
+        const plural = naoSalvos > 1 ? 's' : '';
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: `Existe${naoSalvos > 1 ? 'm' : ''} ${naoSalvos} formulário${plural} não salvo${plural}!`,
+        });
+        return false;
+    }
+
+    for (const form of forms) {
+        if (formHasChanged($(form).attr('id')).length) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atenção',
+                text: 'Um ou mais formulários foram alterados, salve os dados antes de prosseguir.',
+            })
+            return;
+        }
+    }
+    return isValid;
+}
+/**
+ * Verifica se algum formulário nao foi modificado
+ * @param {stringd} formId 
+ * @returns array
+ */
+function formHasChanged(formId) {
+    // Retorna se avariavel nao foi preenchida e o id do form não foi preenchido
+    if (partnersData.length == 0 && $(`#${formId} [name="id"]`).val() == '') return [];
+
+    const formData = new FormData($(`#${formId}`)[0]);
+    const partnerData = partnersData.find(partner => partner.id == $(`#${formId} [name="id"]`).val());
+    const fields = [];//Ids dos campos que foram alterados
+    for (const [key, value] of formData) {
+        if (key == 'id') continue;
+
+        if (partnerData[key] == null) {
+            if (value != '') {
+                fields.push(key);
+            }
+        }
+        else if (key == 'participacao') {
+            if (parseFloat(partnerData[key]) != parseFloat(value.replace('[^\d\.]', ''))) {
+                fields.push(key);
+            }
+        }
+        else if (partnerData[key] != value) {
+            fields.push(key);
+        }
+    }
+    return fields;
+}
+
+export function hasChanged() {
+    const forms = $('[id^="form-partner"]');
+    for (const form of forms) {
+        if (formHasChanged($(form).attr('id')).length) return true;
+    }
+    return false;
+}
+// Executa a busca do sócio pela API
+function serachPartner(formId,searchTerm) {
+    fetch(`/api/v1/partner-search?term=${searchTerm}`).then(async response => {
+        const data = await response.json();
+        if (!response.ok || !data) {
+            return null;
+        }
+        data.id = ''; // Zera o id para criar um novo registro
+        fillForm(`#${formId}`, data);
     });
 }

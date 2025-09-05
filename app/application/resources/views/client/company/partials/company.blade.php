@@ -9,9 +9,9 @@
             <label for="razao_social">Razão Social</label>
             <input type="text" name="razao_social" id="razao_social" required class="form-control" />
         </div>
-        <div class="col-lg-6 col-md-6 mb-3">
+        <div class="col-12 mb-3">
             <label for="cnae">Código CNAE</label>
-            <select name="cnae_id" id="cnae" class="form-select" required></select>
+            <select name="cnae_id[]" id="cnae" class="form-select" data-placeholder="Selecione uma ou mais opções" multiple required></select>
         </div>
         <div class="col-lg-6 col-md-6 mb-3">
             <label for="regime_tributario">Regime de tributário</label>

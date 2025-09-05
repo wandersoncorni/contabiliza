@@ -8,15 +8,7 @@
 <div class="row">
     <div class="col-lg-12 col-md-12 bg-gray-100 rounded-lg shadow p-4 mb-3">
         <div class="row">
-            <div class="col-6 mb-3">        
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Buscar sócio" aria-label="Buscar sốcio" aria-describedby="button-search-partner">
-                    <button class="btn btn-outline-tertiary" type="button" id="button-search-partner">
-                        <i class="heroicon heroicon-magnifying-glass"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="col-6 mb-3">
+            <div class="col-12 mb-3">
                 <div class="btn-toolbar d-flex mb-3">
                     <button type="button" class="btn btn-sm btn-tertiary ms-auto d-flex" id="add-partner" disabled>
                         <i class="heroicon heroicon-plus-circle me-2"></i> Adicionar sócio

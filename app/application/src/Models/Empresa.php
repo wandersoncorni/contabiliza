@@ -52,6 +52,10 @@ class Empresa extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'cnae_id' => 'array',
+    ];
+
     public function plano(): BelongsTo
     {
         return $this->belongsTo(PlanoServicoCategoria::class)->where('ativo', true);
@@ -61,7 +65,7 @@ class Empresa extends Model
      */
     public function socios()
     {
-        return $this->belongsToMany(Socio::class, 'empresa_socio', 'empresa_id', 'socio_id');
+        return $this->belongsTo(Socio::class, 'empresa_id');
     }
     /**
      * Rotulos para status
@@ -91,5 +95,10 @@ class Empresa extends Model
                 4 => 'Em processo de inscrição',
             ][$this->situacao] ?? 'Desconhecido';
         });
+    }
+
+    public function faixaFaturamento(): BelongsTo
+    {
+        return $this->belongsTo(FaixaFaturamento::class);
     }
 }

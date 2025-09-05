@@ -3,15 +3,21 @@
  */
 'use strict';
 
-import { cepFormat, getAddress, formatCurrencyValue, removeInvalidFeedback, addInvalidFeedback, listStates } from '../helpers.js';
-import { newCompaniesList, loadNewCompaniesTable } from './company.js';
+import { cepFormat, currencyFormat, getAddress, formatCurrencyValue, addInvalidFeedback, listStates } from '../helpers.js';
+import { companiesList, loadCompaniesTable } from './company.js';
+import 'select2';
+import 'select2/dist/css/select2.min.css';
+import 'select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
+
+let companyData = null;
 
 export function init() {
     $(document).on('show.bs.modal', '#modal-form-company', function () {
         $('#form-company')[0].reset();
         $('#form-company').find('.is-invalid').removeClass('is-invalid');
         $('#form-company #id').val('');
-        $('#form-company [data-changed="true"]').removeAttr('data-changed');
+        $('#cnae').val('').trigger('change');
+        companyData = null;
         listarCNAEs();
         listarRegimesTributarios()
         listarFaixasFaturamento();
@@ -42,22 +48,57 @@ export function init() {
             });
         $('#faixa_faturamento').prop('disabled', false);
     });
-
-    $('#form-company').on('input', 'input', function () {
-        if ($('#form-company #id').val() != '') {
-            $(this).attr('data-changed', 'true');
-        }
+    $('[name="cnae_id[]"]').select2({
+        theme: "bootstrap-5",
+        width: $(this).data('width') ? $(this).data('width') : $(this).hasClass('w-100') ? '100%' : 'style',
+        placeholder: $(this).data('placeholder'),
+        closeOnSelect: false,
     });
-    $('#form-company').on('change', 'select', function () {
-        if ($('#form-company #id').val() != '') {
-            $(this).attr('data-changed', 'true');
+}
+
+export function setCompanyData(data) {
+    companyData = data;
+    Object.keys(companyData).forEach(campo => {
+        const field = $(`#form-company [name="${campo}"]`);
+        if (field.is('select')) {
+            (async () => await setSelectValue(campo, companyData[campo]))();
+            return;
         }
+
+        if(campo == 'cnae_id') {
+            (async () => await setSelectValue('cnae_id[]', companyData[campo]))();
+            return;
+        }
+
+        if (campo == 'capital_social') {
+            field.val(currencyFormat(companyData[campo]));
+            return;
+        }
+
+        field.val(companyData[campo]);
+    });
+}
+//Insere os dados no select
+const interals = [];
+async function setSelectValue(select, value) {
+    return new Promise((resolve) => {
+        const start = Date.now();
+        const interval = setInterval(() => {
+            if ($(`[name="${select}"] option`).length) {
+                clearInterval(interval);
+                $(`[name="${select}"]`).val(value).trigger('change');
+                resolve(true);
+            }
+            if (Date.now() - start > 30000) {
+                clearInterval(interval);
+            }
+        }, 500);
     });
 }
 /**
  * Lista as CNAEs
  */
-async function listarCNAEs() {
+export async function listarCNAEs() {
 
     if ($('#cnae option').length > 0) return;
 
@@ -76,7 +117,7 @@ async function listarCNAEs() {
 /**
  * Lista os regimes tributários
  */
-async function listarRegimesTributarios() {
+export async function listarRegimesTributarios() {
 
     if ($('#regime_tributario option').length > 0) return;
 
@@ -95,7 +136,7 @@ async function listarRegimesTributarios() {
 /**
  * Lista as faixas de faturamento
  */
-async function listarFaixasFaturamento() {
+export async function listarFaixasFaturamento() {
 
     if ($('#faixa_faturamento option').length > 0) return;
 
@@ -121,10 +162,10 @@ async function listarFaixasFaturamento() {
 /**
  * Lista as naturezas jurídicas
  */
-async function listarNaturezasJuridicas() {
+export async function listarNaturezasJuridicas() {
     if ($('#natureza_juridica option').length > 0) return;
 
-    fetch('/api/v1/naturezas-juridicas')
+    return fetch('/api/v1/naturezas-juridicas')
         .then(async response => {
             if (!response.ok) {
                 return;
@@ -145,10 +186,9 @@ async function listarNaturezasJuridicas() {
         });
 }
 /**
- * 
- * @returns Lista as areas ou ramos de atividade
+ * Lista as areas ou ramos de atividade
  */
-async function listarAreasAtividade() {
+export async function listarAreasAtividade() {
     if ($('#area_atividade option').length > 0) return;
     $('#area_atividade').prop({ disabled: true }).addClass('skeleton');
     try {
@@ -173,12 +213,20 @@ async function listarAreasAtividade() {
 }
 //Salva o formulário de empresa
 export function saveCompany() {
-    $('#form-company .alert').remove();
-    const form = $('#form-company');
-    if ($('#form-company .is-invalid').length) {
+    $('.is-invalid').removeClass('is-invalid');
+    $('.invalid-feedback').remove();
+    // Valida o formulário
+    if (!$('#form-company')[0].checkValidity()) {
+        Swal.fire('Atenção', 'Verifique os erros no formulário', 'warning');
+        $('#form-company [required=""]').each(function () {
+            if ($(this).val() == '') {
+                $(this).addClass('is-invalid').val($(this).val());
+                addInvalidFeedback(this);
+            }
+        })
         return;
     }
-    
+
     //Envia o formulario completo se o ID for vazio, indicando que é um novo registro
     let formData = null;
     let config = {
@@ -188,15 +236,31 @@ export function saveCompany() {
             'accept': 'application/json'
         },
     };
+    //Se o ID não existir, cria um novo registro
     if ($('#form-company #id').val() == '') {
         formData = new FormData($('#form-company')[0]);
         config.body = formData;
     }
-    // Se o ID já existir, atualiza o registro
-    else if ($('#form-company [data-changed="true"]').length) {
+    //Senão, separa somente os campos alterados
+    else if (companyData != null) {
         formData = new FormData();
-        $('#form-company [data-changed="true"]').each(function () {
-            formData.append($(this).attr('name'), $(this).val());
+        const form = new FormData($('#form-company')[0]);
+        form.forEach((value, key) => {
+            if (key == 'id') return;
+            if (key == 'capital_social') {
+                const formValue = value.replace(/[^\d,]/g, '').replace(',', '.');
+                if (companyData[key] != formValue) {
+                    formData.append(key, formValue);
+                }
+            }
+            else if (companyData[key] == null) {
+                if (value != '') {
+                    formData.append(key, value);
+                }
+            }
+            else if (companyData[key] != value) {
+                formData.append(key, value);
+            }
         });
         formData.append('id', $('#form-company #id').val());
         formData.append('_method', 'PUT');
@@ -207,43 +271,91 @@ export function saveCompany() {
     }
     fetch('/api/v1/company', config).then(async response => {
         const data = await response.json();
-        if (response.ok) {            
-            $('#form-company [data-changed="true"]').removeAttr('data-changed');
-            newCompaniesList.push(data);
-            loadNewCompaniesTable();
+        if (response.ok) {
+            companiesList.push(data);
+            loadCompaniesTable();
             $('#form-company [name="id"]').val(data.id)
-            $('#form-company div:first').prepend(
-                $('<div />', { class: 'alert alert-success d-flex align-items-center' }).append([
-                    $('<i />', { class: 'heroicon heroicon-check-circle me-2' }),
-                    $('<span />', { text: 'Empresa salva com sucesso!' })                
-            ]));
-            return;
-        }   
-        if (data.error) {
-            $('#form-company div:first').prepend($('<div />', { class: 'alert alert-danger d-flex align-items-center'}).append(
-                $('<i />', { class: 'heroicon heroicon-x-circle me-2' }),
-                data.error
-            ));
+            Swal.fire({
+                icon: 'success',
+                title: 'Empresa salva com sucesso'
+            });
+            companyData = data;
             return;
         }
-        if(typeof data.errors === 'object') {
+        if (data.error) {
+            Swal.fire({
+                icon: 'error',
+                title: data.error ?? 'Erro ao salvar os dados da empresa.'
+            });
+            return;
+        }
+        if (typeof data.errors === 'object') {
             Object.keys(data.errors).forEach(field => {
-                if(field == 'id') return;
+                if (field == 'id') return;
                 const el = $(`#form-company [name="${field}"]`);
                 if (el.length) {
                     addInvalidFeedback(el.get(0), data.errors[field][0]);
                 } else {
-                    $('#form-company').prepend($('<div />', {
-                        class: 'alert alert-danger',
-                        text: 'Ocorreu um erro ao salvar a empresa'
-                    }));
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ocorreu um erro ao salvar a empresa'
+                    });
                 }
             });
             return;
         }
-        $('#form-company div:first').prepend($('<div />', { class: 'alert alert-danger d-flex align-items-center'}).append(
-                $('<i />', { class: 'heroicon heroicon-x-circle me-2' }),
-                'Ocorreu um erro ao salvar a empresa'
-            ));
+        $('#form-company div:first').prepend($('<div />', { class: 'alert alert-danger d-flex align-items-center' }).append(
+            $('<i />', { class: 'heroicon heroicon-x-circle me-2' }),
+            'Ocorreu um erro ao salvar a empresa'
+        ));
     });
+}
+
+export function checkCompanyForm() {
+    const formData = new FormData($('#form-company')[0]);
+    const changed = hasChanged();
+    if (changed) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'Um ou mais campos da empresa foram alterados, salve os dados antes de prosseguir.',
+        });
+        return false;
+    }
+    if(companyData == null) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'Informe os dados da empresa antes de prosseguir.',
+        });
+        return false;
+    }
+    return true;
+}
+
+export function hasChanged() {
+    const formData = new FormData($('#form-company')[0]);
+    let changed = false;
+    for (const [key, value] of formData) {
+        if (changed == true) return changed;
+        if (key == 'id') continue;
+        if (companyData == null){
+            changed = value !== '';
+            continue;
+        }
+        if(key == 'cnae_id[]') {
+            changed = !(companyData['cnae_id']).includes(value);
+            continue;
+        }
+        if (key == 'capital_social') {
+            changed = currencyFormat(companyData[key]) !== value;
+            continue;
+        }
+        if (companyData[key] == null) {
+            changed = value !== '';
+            continue;
+        }
+        changed = companyData[key].toString() !== value;
+    };
+    return changed;
 }

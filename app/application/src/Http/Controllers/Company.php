@@ -6,7 +6,7 @@ use App\Application\Http\Requests\CompanyValidateRequest;
 use App\Application\Models\Empresa;
 use App\Application\Models\PlanoServicoContratado;
 use App\Application\Models\PlanoServico;
-use App\Application\Models\PlanoServicoValor;
+use App\Application\Models\TiposPagamento;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +16,7 @@ class Company
 {
     public function list(): JsonResponse
     {
-        return response()->json(Empresa::where('status', 1)->get());
+        return response()->json(Empresa::all());
     }
     /**
      * Metodo para criar uma empresa na aplicação. É uma empresa existente
@@ -58,28 +58,33 @@ class Company
 
     public function delete(Request $request): JsonResponse
     {
-        return response()->json([]);
-    }
-    /**
-     * Listas as solicitações para criação de empresas
-     */
-    public function listCompaniesRequests(): JsonResponse
-    {
-        // Aqui você pode implementar a lógica para listar as solicitações de empresas
-        return response()->json(Empresa::where('status', 2)->get());
+        $client_id = session('client_context', auth()->user()->person->id);
+        try {
+            Empresa::where('id', $request->id)->where('client_id', $client_id)->delete();
+            return response()->json(['message' => 'Empresa excluida com sucesso!'], 200);
+        } catch (\Exception $e) {
+            // Log the error message for debugging
+            Log::channel('database')->error('Erro ao excluir uma empresa.', [$e->getMessage()]);
+            // Return a JSON response with an error message
+            return response()->json(['error' => 'Erro ao excluir a empresa.'], 422);
+        }
     }
     /**
      * Salva o plano de serviço para uma empresa
+     * Se o ID do formulário for nulo e não houver um plano em edição, cria um novo plano de serviço.
+     * Se houver um plano em edição, atualiza o plano de serviço.
      */
     public function saveBilling(Request $request): JsonResponse
     {
+        $idValidation = $request->isMethod('post') ? 'nullable' : 'required';
         $validation = Validator::make($request->all(), [
-            'id' => 'nullable|integer|exists:planos_servicos_contratados,id',
+            'id' => "$idValidation|integer|exists:planos_servicos_contratados,id",
             'empresa_id' => 'required|integer|exists:empresas,id',
-            'plano_id' => 'required',
+            'plano_id' => 'required|regex:/^\d\.\d$/',
         ], [
             'empresa_id.required' => 'O identificador da empresa é obrigatório.',
             'plano_id.required' => 'Selecione um plano.',
+            'plano_id.regex' => 'O plano selecionado é inválido.',
         ]);
 
         if ($validation->fails()) {
@@ -87,7 +92,9 @@ class Company
         }
 
         $data = $request->all();
-
+        //Verifica se a empresa possui um plano em edição
+        $data['id'] = PlanoServicoContratado::where('empresa_id', $data['empresa_id'])->whereNull('ativo')->first()['id'] ?? null;
+        
         $data['client_id'] = session()->get('client_context') ?? auth()->user()->person->client_id;
         /**
          * @var int $pid - O id do plano
@@ -95,9 +102,11 @@ class Company
          */
         list($pid, $vpid) = explode('.', $data['plano_id']);
 
+        $plano = PlanoServico::find($pid);
+        $categorias = $plano->categorias()->get();
         $empresa = Empresa::find($data['empresa_id']);
         $socios = $empresa->socios()->where('client_id', $data['client_id'])->get();
-        $plano = PlanoServico::find($pid);
+        
         $servicos = $plano->servicos()->get();
 
         //Totaliza os pro_labore a serem pagos
@@ -137,35 +146,74 @@ class Company
         if (!is_null($adicionalFaixaFaturamento)) {
             $valorAdicionalFaturamento = $adicionalFaixaFaturamento->valor;
         }
-
+        $valorPlanoServico = $plano->valorPlanoServico()->where('id', $vpid)->first();
         $dadosPlano = [
-            'plano_id' => $pid,
+            'id' => $data['id'],
+            'empresa_id' => $data['empresa_id'],
+            'client_id' => $data['client_id'],
             'plano' => [
-                'valor_plano_id' => $vpid,
-                'valor_plano' => $plano->valorPlanoServico()->where('id', $vpid)->first()->valor,
-                'pro_labore' => $totalProlabore,
-                'valor_prolabore' => $valorProlabore,
-                'folha_pagamento' => $empresa['total_funcionarios'],
-                'valor_folha_pagamento' => $valorServicoFolha,
-                'faixa_faturamento' => $empresa['faixa_faturamento_id'],
+                'id' => $pid,
+                'valor' => $valorPlanoServico->valor,//Valor do plano
+                'valor_plano_servico_id' => $valorPlanoServico->id,//Periodicidade do plano
+                'pro_labore_obs' => $categorias->where('servico_id', 9)->first()['observacao'],//Observação do pro_labore
+                'valor_unitario_pro_labore' => $servicoProlabore->valor,//Valor unitário do pro_labore
+                'total_socios' =>  $totalProlabore,//Total de sócios que receberão o pro_labore     
+                'total_valor_prolabore' => $valorProlabore,//Total do serviço (valor do serviço * total de sócios)
+                'folha_pagamento_obs' => $categorias->where('servico_id', 10)->first()['observacao'],//Observação da folha de pagamento
+                'valor_unitario_folha_pagamento' => $servicoFolha->valor,//Valor unitário da folha de pagamento
+                'total_folha_pagamento' => $empresa['total_funcionarios'],//Total de funcionarios da folha de pagamento
+                'valor_folha_pagamento' => $valorServicoFolha,//Total do serviço (valor do serviço * total de funcionarios da folha de pagamento)
+                'faixa_faturamento_id' => $empresa['faixa_faturamento_id'],//ID da faixa de faturamento,
+                'faixa_faturamento_obs' => $categorias->where('servico_id', 11)->first()['observacao'],//Observação da faixa de faturamento
+                'faixa_faturamento' => $empresa->faixaFaturamento()->first()['descricao'],//Faixa de faturamento
                 'valor_faixa_faturamento' => $valorAdicionalFaturamento
-            ]
+            ],
+            'pagamento' => [
+                'forma_pgto_id' => null,
+                'dia_cobranca' => null
+            ] //Será preenchido na configuração do pagamento
         ];
+        
+        // Se o id do plano de serviço contratado for nulo será criado um novo
+        if(is_null($dadosPlano['id'])){
+            return $this->createCompanyBilling($dadosPlano);
+        }
 
-        $data = array_merge($data, $dadosPlano);
-        try {
-            $data['id'] = null;
-            $planoContratado = PlanoServicoContratado::create($data);
+        return $this->editCompanyBilling($dadosPlano);
+    }
+    /**
+     * Cria um plano de servico para uma empresa
+     * 
+     * @param $dadosPlano Array de dados do plano
+     * @return JsonResponse
+     */
+    protected function createCompanyBilling($dadosPlano): JsonResponse
+    {
+         try {
+            $planoContratado = PlanoServicoContratado::create($dadosPlano);
             return response()->json($planoContratado, 201);
         } catch (\Exception $e) {
             // Log the error message for debugging
-            Log::channel('database')->error('Erro ao criar uma empresa.', [$e->getMessage()]);
-            dd($e->getMessage());
-            // Return a JSON response with an error message
-            if ($e->getCode() == 23000) {
-                return response()->json(['error' => 'Empresa já cadastrada.'], 422);
-            }
-            return response()->json(['error' => 'Erro ao tentar criar a empresa.'], 422);
+            Log::channel('database')->error('Erro ao criar um plano de servico de para uma empresa.', [$e->getMessage()]);            
+            return response()->json(['error' => 'Erro ao tentar criar o plano de servico da empresa.'], 422);
+        }
+    }
+    /**
+     * Edita um plano contratado existente
+     * 
+     * @param $dadosPlano Array de dados do plano
+     * @return JsonResponse
+     */
+    protected function editCompanyBilling($dadosPlano): JsonResponse
+    {
+        try {
+            $planoContratado = PlanoServicoContratado::find($dadosPlano['id']);
+            $planoContratado->update($dadosPlano);
+            return response()->json($planoContratado, 201);
+        } catch (\Exception $e) {
+            // Log the error message for debugging
+            Log::channel('database')->error('Erro ao editar o plano de servico de uma empresa.', [$e->getMessage()]);            
+            return response()->json(['error' => 'Erro ao tentar editar o plano de servico da empresa.'], 422);
         }
     }
     /**
@@ -189,16 +237,42 @@ class Company
         $plano = PlanoServicoContratado::select(['id', 'plano', 'pagamento'])
             ->where('empresa_id', $empresaId)
             ->whereNull('deleted_at')
-            ->orderByRaw('CASE WHEN ativo = 0 THEN 0 ELSE 1 END')
-            ->first();
-        
-        if (!is_null($plano)) {
-            $dadosPlano = $plano->plano;
-            $valorPlano = PlanoServicoValor::where('id', $dadosPlano['valor_plano_id'])->first();
-            $plano->plano_id = $valorPlano->plano_servico_id . '.' . $valorPlano->periodicidade_id;
-            $plano->valor = $valorPlano->valor;
-        }
-        
+            ->first();        
         return response()->json($plano, 200);
+    }
+
+    public function savePayment(Request $request): JsonResponse
+    {
+        $tiposPagamentos = TiposPagamento::all()->pluck('id')->toArray();
+        $validation = Validator::make($request->all(), [
+            'plano_servico_contratado_id' => 'required|integer|exists:planos_servicos_contratados,id',
+            'forma_pgto_id' => ['required', 'integer', 'in:'.implode(',', $tiposPagamentos)],
+            'dia_cobranca' => 'required|integer|min:1|max:31',
+        ],[
+            'plano_servico_contratado_id.required' => 'O id do plano de servico contratado é obrigatorio',
+            'dia_cobranca.required' => 'A data do pagamento é obrigatorio',
+            'forma_pgto_id.required' => 'A forma de pagamento é obrigatorio',
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json(['error' => $validation->errors()->first()], 422);
+        }
+        $data = $validation->validated();
+        
+        try {
+            $planoServicoContratado = PlanoServicoContratado::find($data['plano_servico_contratado_id']);
+            $planoServicoContratado->pagamento = [
+                'forma_pgto_id' => $data['forma_pgto_id'],
+                'dia_cobranca' => $data['dia_cobranca']
+            ];
+            $planoServicoContratado->save();
+            $dadosPagamento = $planoServicoContratado->pagamento;
+            return response()->json($planoServicoContratado->pagamento, 201);
+        }
+        catch (\Exception $e) {
+            // Log the error message for debugging
+            Log::channel('database')->error('Erro ao editar o plano de servico de uma empresa.', [$e->getMessage()]);            
+            return response()->json(['error' => 'Erro ao tentar editar o plano de servico da empresa.'], 422);
+        }
     }
 }

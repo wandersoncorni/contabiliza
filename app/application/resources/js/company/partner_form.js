@@ -8,12 +8,17 @@ import * as helpers from '../helpers.js';
 let partnerCount = 0;
 
 export function createPartnerForm() {
-    partnerCount++;
+    partnerCount = $('.accordion').length + 1;
     const selector = `partner-${partnerCount}`;
     const accordionId = `accordionForm${partnerCount}`;
     const collapseId = `collapseForm${partnerCount}`;
     const headerId = `headerForm${partnerCount}`;
     const formId = `form-partner-${partnerCount}`;
+    const btnRemove = `<div class="col-lg-12 mb-3 text-end">
+                            <button type="button" class="btn btn-danger d-inline-flex align-items-center me-2 remove-partner">
+                                <i class="heroicon heroicon-trash"></i> Excluir
+                            </button>
+                        </div>`;
     const formHtml = `
     <form id="${formId}">
         <div class="accordion mb-3" id="${accordionId}">
@@ -25,23 +30,29 @@ export function createPartnerForm() {
                 </h2>
                 <div id="${collapseId}" class="accordion-collapse collapse" aria-labelledby="${headerId}" data-bs-parent="#${accordionId}">
                     <div class="accordion-body bg-white">
-                        <div class="col-lg-12 mb-3 text-end">
-                            <button type="button" class="btn btn-danger d-inline-flex align-items-center me-2 remove-partner">
-                                <i class="heroicon heroicon-trash"></i> Excluir
-                            </button>
-                        </div>
+                    ${partnerCount > 1 ? btnRemove : ''}
                         <!-- Dados pessoais -->
                         <div class="col-lg-12 col-md-12 bg-gray-100 rounded-lg shadow p-4 mb-3">
                             <h5 class="mb-3">Dados pessoais</h5>
                             <div class="row mb-3">
-                                <div class="col-lg-6 col-md-5">
+                                <div class="col-lg-3 col-md-3">
+                                    <label class="form-label">CPF</label>
+                                    <input type="text" class="form-control cpf" name="cpf" required />
+                                </div>
+                                <div class="col-lg-9 col-md-9">
                                     <label class="form-label">Nome</label>
                                     <input type="text" class="form-control" name="nome" required />
                                     <input type="hidden" name="id" id="id" value="" />
                                 </div>
-                                <div class="col-lg-3 col-md-3">
-                                    <label class="form-label">CPF</label>
-                                    <input type="text" class="form-control cpf" name="cpf" required />
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-5 col-md-5">
+                                    <label class="form-label">E-mail</label>
+                                    <input type="email" class="form-control" name="email" required />
+                                </div>
+                                <div class="col-4 col-md-4">
+                                    <label class="form-label">Profissão</label>
+                                    <input type="text" class="form-control" name="profissao" required />
                                 </div>
                                 <div class="col-lg-3 col-md-3">
                                     <label class="form-label">Telefone</label>
@@ -49,21 +60,11 @@ export function createPartnerForm() {
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">E-mail</label>
-                                    <input type="email" class="form-control" name="email" required />
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label">Profissão</label>
-                                    <input type="text" class="form-control" name="profissao" required />
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
+                                <div class="col-6 col-md-6">
                                     <label class="form-label">Estado Civil</label>
                                     <select class="form-select estado-civil" name="estado_civil" required ></select>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-6 col-md-6">
                                 <label class="form-label">Regime de Bens</label>
                                     <select class="form-select" name="regime_bens" id="regimes_bens" disabled >
                                 </select>
@@ -128,11 +129,11 @@ export function createPartnerForm() {
                                 <div class="col-12 d-flex align-items-center">
                                     <label class="form-label me-3">Responsável perante a Receita Federal:</label>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="resp_rf" value="0" id="resp_rf_${partnerCount}0" checked />
+                                        <input class="form-check-input" type="radio" name="resp_rf" value="0" id="resp_rf_${partnerCount}0" ${partnerCount > 1 ? 'checked' : ''} />
                                         <label class="form-check-label" for="resp_rf_${partnerCount}0">não</label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="resp_rf" value="1" id="resp_rf_${partnerCount}1" />
+                                        <input class="form-check-input" type="radio" name="resp_rf" value="1" id="resp_rf_${partnerCount}1" ${partnerCount == 1 ? 'checked' : ''}/>
                                         <label class="form-check-label" for="resp_rf_${partnerCount}1">sim</label>
                                     </div>
                                 </div>
@@ -156,7 +157,7 @@ export function createPartnerForm() {
             $(`#${formId} [name="regime_bens"]`).prop('disabled', false);
             return;
         }
-        $(`#${formId} [name="regime_bens"]`).prop('disabled', true);
+        $(`#${formId} [name="regime_bens"]`).prop('disabled', true).val('');
     });
 
     setupFormPartner(formId);
@@ -172,17 +173,6 @@ function setupFormPartner(formId) {
     $(`#${formId} [name="cep"]`).on('input', function () {
         helpers.cepFormat(this);
         helpers.getAddress(this);
-        if($(`#${formId} [name="id"]`).val()){
-            ['logradouro', 'bairro', 'localidade','estado'].forEach(field => {
-                $(`#${formId} [name="${field}"]`).attr('data-changed', true);
-            });
-        }
-    });
-    //Detecta alterações e marca o campo como alterado
-    $(`#${formId} input, #${formId} email, #${formId} select, #${formId} :checkbox`).on('change', function(){
-        if($(`#${formId} [name="id"]`).val()){
-            $(this).attr('data-changed', 'true');
-        }
     });
 }
 let listaRegimesBens = [];
@@ -198,7 +188,7 @@ async function listarRegimeBens(formId) {
         const regimesBens = await response.json();
         listaRegimesBens = regimesBens;
     }
-    field.html(`<option value="">Selecione uma opção</option>`);
+    field.html(`<option value="0">Selecione uma opção</option>`);
     listaRegimesBens.forEach(regimeBens => {
         field.append(`<option value="${regimeBens.id}">${regimeBens.nome}</option>`);
     });

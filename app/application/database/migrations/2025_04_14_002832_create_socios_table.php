@@ -15,13 +15,14 @@ return new class extends Migration
     Schema::create('socios', function (Blueprint $table) {
         $table->id(); // id_socio
         $table->foreignId('client_id')->constrained('people')->cascadeOnDelete();
+        $table->foreignId('empresa_id')->constrained('empresas')->cascadeOnDelete();
+        $table->foreignId('estado_civil')->nullable()->constrained('estados_civis')->cascadeOnDelete();
+        $table->foreignId('regime_bens')->nullable()->constrained('regimes_bens')->cascadeOnDelete();
         $table->string('nome');
         $table->string('email')->nullable();
-        $table->string('cpf')->unique();
+        $table->string('cpf');
         $table->string('profissao')->nullable();
         $table->string('telefone')->nullable();
-        $table->string('estado_civil')->nullable();
-        $table->string('regime_bens')->nullable();
         $table->decimal('participacao', 5, 2)->nullable(); // porcentagem
         $table->boolean('pro_labore')->nullable();
         $table->boolean('resp_rf')->default(false); // Responsável Receita Federal
@@ -37,7 +38,7 @@ return new class extends Migration
 
         $table->timestamps();
 
-        $table->unique(['client_id', 'cpf']);
+        $table->unique(['empresa_id', 'cpf']);
     });
 }
 

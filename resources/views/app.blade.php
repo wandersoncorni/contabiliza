@@ -8,7 +8,7 @@ $userImage = 'data:image/svg+xml,<svg data-slot="icon" aria-hidden="true" fill="
 @push('scripts')
     <script src="/vendor/jquery/jquery.min.js"></script>
     <script src="/vendor/datatables/datatables.min.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="@manifest('app.js')"></script>
     <script>
     fetch('/vendor/datatables/pt-BR.json')
     .then(res => res.json())

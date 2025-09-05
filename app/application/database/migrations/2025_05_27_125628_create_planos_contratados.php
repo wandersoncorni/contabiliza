@@ -17,14 +17,10 @@ return new class extends Migration
             $table->foreignId('client_id')->constrained('people')->onDelete('cascade');
             $table->longText('plano');
             $table->string('pagamento')->default(json_encode([]));
-            $table->boolean('ativo')->default(false);
+            $table->boolean('ativo')->nullable()->default(null);//Se null entao o plano é considerado em elaboração. Se 0, plano inativo. Se 1, plano ativo
             $table->timestamps();
-            $table->softDeletes();
-
-            $table->unique(['empresa_id', 'client_id', 'ativo', 'deleted_at']);
         });
     }
-
     /**
      * Reverse the migrations.
      */

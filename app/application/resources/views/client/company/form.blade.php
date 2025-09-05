@@ -53,8 +53,8 @@
                                 </form>
                             </div>
                             <div class="tab-pane fade" id="nav-cobranca" role="tabpanel" aria-labelledby="nav-cobranca-tab">
-                                <form id="form-billing">
-                                    @include('application::client.company.partials.billing')
+                                <form id="form-payment">
+                                    @include('application::client.company.partials.payment')
                                 </form>
                             </div>
                             <div class="tab-pane fade" id="nav-billings" role="tabpanel" aria-labelledby="nav-billings-tab">
@@ -65,7 +65,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-secondary" id="btn-close">Fechar</button>
                 <button type="button" class="btn btn-info" id="btn-prev" disabled>Voltar</button>
                 <button type="button" class="btn btn-info" id="btn-next">Próximo</button>
                 <button type="button" class="btn btn-primary" id="btn-save">Salvar</button>

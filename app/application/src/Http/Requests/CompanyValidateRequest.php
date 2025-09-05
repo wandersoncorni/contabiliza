@@ -14,7 +14,7 @@ class CompanyValidateRequest extends FormRequest
     {
         $formattedData = [
             'client_id' => session('client_context', auth()->user()->person->id),
-            'status' => is_null($this->cnpj) ? 2 : 1,
+            'status' => is_null($this->cnpj) ? 4 : 1,
             'capital_social' => str_replace(',', '.', preg_replace('/[^\d,]/', '', $this->capital_social)),
         ];
 
@@ -48,7 +48,7 @@ class CompanyValidateRequest extends FormRequest
             'capital_social'       => ['decimal:2', 'min:0'],
             'cep'                  => ['string', 'max:255'],
             'client_id'            => ['integer', 'gt:0', 'exists:people,id'],
-            'cnae_id'              => ['integer', 'gt:0', 'exists:cnae,id'],
+            'cnae_id'              => ['array'],
             'estado'               => ['string', 'max:255'],
             'faixa_faturamento_id' => ['integer', 'gt:0', 'exists:faixas_faturamento,id'],
             'logradouro'           => ['string', 'max:255'],
@@ -56,7 +56,7 @@ class CompanyValidateRequest extends FormRequest
             'nome_fantasia'        => ['string', 'max:255'],
             'razao_social'         => ['string', 'max:255'],
             'regime_tributario_id' => ['integer', 'gt:0', 'exists:regimes_tributarios,id'],
-            'status'               => [Rule::in([0, 1, 2, 3])],
+            'status'               => [Rule::in([0, 1, 2, 3, 4])],
         ];      
         
         $others = [            
@@ -91,7 +91,7 @@ class CompanyValidateRequest extends FormRequest
             $this->request->remove('_method');
             $this->request->remove('status');
         }
-        
+        $mutable['cnae_id.*'] = ['integer', 'exists:cnae,id'];
         return array_merge($mutable, $others);
     }
 
