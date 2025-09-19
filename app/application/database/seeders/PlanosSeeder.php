@@ -5,13 +5,11 @@ namespace App\Application\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Application\Models\Servico;
-use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoCategoriaServico;
 use App\Application\Models\CategoriaServico;
 use App\Application\Models\FaixaFaturamento;
 use App\Application\Models\PlanoServico;
 use App\Application\Models\PlanoServicoFaixaFaturamento;
-use App\Application\Models\PlanoServicoValor;
-use App\Application\Models\ServicoValor;
 
 class PlanosSeeder extends Seeder
 {
@@ -23,15 +21,15 @@ class PlanosSeeder extends Seeder
         // Limpa as tabelas relacionadas
         $this->clearTables();
 
-        $this->criarPlano();
+        $this->criarPlanos();
 
-        $this->criarValoresFaixasFaturamento();
+        $this->criarCategorias();
 
         $this->criarServicos();
 
-        $this->criarCategoriasServicos();
+        $this->criarRelacionamentosFaixasFaturamento();
 
-        $this->criarPlanoCategoriaServico();        
+        $this->criarRelacionamentosPlanoCategoriaServico();        
     }
     /**
      * Limpa as tabelas relacionadas aos planos de serviço
@@ -39,19 +37,17 @@ class PlanosSeeder extends Seeder
     protected function clearTables(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        PlanoServicoValor::truncate();
-        PlanoServicoCategoria::truncate();
-        ServicoValor::truncate();
+        PlanoCategoriaServico::truncate();
+        PlanoServicoFaixaFaturamento::truncate();
         Servico::truncate();
         CategoriaServico::truncate();
         PlanoServico::truncate();
-        PlanoServicoFaixaFaturamento::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
     /**
      * Cria os planos de serviço com seus respectivos valores
      */
-    protected function criarPlano(): void
+    protected function criarPlanos(): void
     {
         $planos = [
             'Bronze',
@@ -67,22 +63,6 @@ class PlanosSeeder extends Seeder
             1 => 'Comércio',
             2 => 'Serviços',
         ];
-        $valores = [
-            1 => [
-                1 => 299.90, // Bronze
-                2 => 449.90, // Prata
-                3 => 599.90, // Ouro
-            ],
-            2 => [
-                1 => 199.90,
-                2 => 299.90,
-                3 => 349.90,
-            ],
-        ];
-        $regimesTributarios = [
-            1 => 'Simples Nacional',
-            2 => 'Lucro Presumido',
-        ];
         // Cria os planos
         foreach ($planos as $i => $plano) {
             $plan = PlanoServico::factory()->create([
@@ -92,26 +72,6 @@ class PlanosSeeder extends Seeder
                 'posicao' => $i,
                 'cor' => $cores[$i],
             ]);
-            // Cria os valores para cada plano
-            foreach ($areaAtividade as $aid => $area) {
-                $valorPlano = $valores[$aid][$plan->id];
-                PlanoServicoValor::factory()->create([
-                    'licensed_id' => 1,
-                    'plano_servico_id' => $plan->id,
-                    'area_atividade_id' => $aid, // 1 - Comércio, 2 - Serviços
-                    'periodidade_id' => 1,// 1 - Mensal
-                    'rotulo' => 'Mensal',
-                    'valor' => $valorPlano,
-                ]);
-                PlanoServicoValor::factory()->create([
-                    'licensed_id' => 1,
-                    'plano_servico_id' => $plan->id,
-                    'area_atividade_id' => $aid, // 1 - Comércio, 2 - Serviços
-                    'periodidade_id' => 2,// 2 - Anual
-                    'rotulo' => 'Anual',
-                    'valor' => (($valorPlano * 12) - ($valorPlano * 12 * 0.1)),
-                ]);
-            }
         }
     }
 
@@ -139,23 +99,13 @@ class PlanosSeeder extends Seeder
                 'nome' => $servico['nome'],
                 'licensed_id' => 1,
             ]);
-            if (isset($servico['valor'])) {
-                foreach($servico['valor'] as $i => $valor) {
-                    ServicoValor::factory()->create([
-                        'servico_id' => $sid->id,
-                        'plano_servico_id' => $i + 1,
-                        'valor' => $valor ?? 0,
-                        'condicoes' => json_encode([ $servico['condicoes'][0],$servico['condicoes'][$i+1]]) ?? [],
-                    ]);
-                }
-            }
         }
     }
     /**
      * Cria as faixas de faturamento para os planos de serviço e
      * define os preços
      */
-    protected function criarValoresFaixasFaturamento(): void
+    protected function criarRelacionamentosFaixasFaturamento(): void
     {
         /* 
          * Ids dos planos de serviço
@@ -173,37 +123,39 @@ class PlanosSeeder extends Seeder
         $valoresFaixaPlano = [
             // Simples Nacional
             1 => [
-                ['0.00', '0.00', '0.00'],
-                ['50.00', '50.00', '50.00'],
-                ['100.00', '100.00', '100.00'],
-                ['150.00', '150.00', '150.00'],
-                ['200.00', '200.00', '200.00'],
-                ['250.00', '250.00', '250.00'],
-                ['400.00', '350.00', '350.00'],
-                ['450.00', '450.00', '450.00'],
-                ['550.00', '600.00', '650.00'],
+                ['299.90', '399.90', '449.90'],
+                ['349.90', '449.90', '499.90'],
+                ['349.90', '499.90', '599.90'],
+                ['349.90', '499.90', '599.90'],
+                ['349.90', '499.90', '599.90'],
+                ['599.90', '699.90', '749.90'],
             ],
             // Lucro Presumido
             2 => [
-                ['0.00', '0.00', '0.00'],
-                ['50.00', '50.00', '50.00'],
-                ['100.00', '100.00', '100.00'],
-                ['150.00', '150.00', '150.00'],
-                ['200.00', '200.00', '200.00'],
-                ['300.00', '300.00', '300.00'],
+                ['249.90', '349.90', '399.90'],
+                ['299.90', '399.90', '449.90'],
+                ['349.90', '449.90', '499.90'],
+                ['349.90', '449.90', '499.90'],
+                ['349.90', '449.90', '499.90'],
+                ['349.90', '449.90', '499.90'],
+                ['549.90', '649.90', '699.90'],
+                ['649.90', '749.90', '799.90'],
+                ['749.90', '899.90', '999.90'],
             ],
         ];
 
         $count = 0;
+        $ref = 0;
         foreach ($faixasFaturamento as $faixa) {
-            if ($count > 8) {
+            if ($faixa['regime_tributario_id'] != $ref) {
+                $ref = $faixa['regime_tributario_id'];
                 $count = 0;
             }
-            foreach ($planoServicoId as $psid) {
-                
+            foreach ($planoServicoId as $psid) {                
                 PlanoServicoFaixaFaturamento::factory()->create([
                     'plano_servico_id' => $psid,
                     'faixa_faturamento_id' => $faixa['id'],
+                    'regime_tributario_id' => $faixa['regime_tributario_id'],
                     'valor' => $valoresFaixaPlano[$faixa['regime_tributario_id']][$count][$psid - 1],
                 ]);
             }
@@ -213,7 +165,7 @@ class PlanosSeeder extends Seeder
     /**
      * Cria as categorias de serviços
      */
-    protected function criarCategoriasServicos(): void
+    protected function criarCategorias(): void
     {
         $categorias = [
             'Contabilidade',
@@ -232,7 +184,7 @@ class PlanosSeeder extends Seeder
      * Cria o relacionamento entre planos, categorias e serviços
      * Formato: [plano_servico_id, categoria_servico_id, servico_id, [observacao]]
      */
-    protected function criarPlanoCategoriaServico(): void
+    protected function criarRelacionamentosPlanoCategoriaServico(): void
     {
         // Relaciomaneto entre planos, categorias e serviços
         $planosCategoriasServicos = [
@@ -241,9 +193,8 @@ class PlanosSeeder extends Seeder
                 [1,1,1],//[bronze, contabilidade, abertura de empresa]
                 [1,1,2],//[bronze, contabilidade, contabilizade completa]
                 [1,2,4],//[bronze, atendimento, whatsapp]
-                [1,4,9,'Até 2 Sócios Grátis'],//[bronze, serviço extra, pró-labore]
-                [1,4,10,'Cobrado a parte'],//[bronze, servico extra, folha de pagamento]
-                [1,4,11,'Até 30.000,00'],//[bronze, servico extra, faixa de faturamento]
+                [1,4,9,'Até 2 Sócios Grátis', 50.00, ['gt', 2]],//[bronze, serviço extra, pró-labore]
+                [1,4,10,'Cobrado a parte', 10.00, ['gt', 0]],//[bronze, servico extra, folha de pagamento]
             ],
             // Plano 2 - Prata
             [
@@ -252,10 +203,9 @@ class PlanosSeeder extends Seeder
                 [2,1,3],//[prata, contabilidade, Certificado digital gratuito]
                 [2,2,4],//idem ao plano 1
                 [2,2,5],//[prata, atendimento, telefone]
-                [2,3,7,'Até 5 NFs/mês'],//[prata, notas fiscais, Emissão de notas pelo nosso time]
-                [2,4,9,'Até 3 Sócios Grátis'],//idem ao plano 1
-                [2,4,10,'Até 2 funcionários grátis'],//idem ao plano 1
-                [2,4,11,'Até 100.000,00'],//idem ao plano 1
+                [2,3,7,'Até 5 NFs/mês', 20, ['gt', 5]],//[prata, notas fiscais, Emissão de notas pelo nosso time]
+                [2,4,9,'Até 3 Sócios Grátis', 40.00, ['gt', 3]],//idem ao plano 1
+                [2,4,10,'Até 2 funcionários grátis', 5.00, ['gt', 2]],//idem ao plano 1
             ],
             // Plano 3 - Ouro
             [
@@ -265,22 +215,22 @@ class PlanosSeeder extends Seeder
                 [3,2,4],//idem ao plano 2
                 [3,2,5],//idem ao plano 2
                 [3,2,6],//[ouro, atendimento, Reunião com especialistas]
-                [3,3,7, 'Até 10 NFs/mês'],
+                [3,3,7, 'Até 10 NFs/mês', 30, ['gt', 10]],//[ouro, notas fiscais, Emissão de notas pelo nosso time]
                 [3,3,8],//[ouro, notas fiscais, Emissor de Notas Fiscais]
-                [3,4,9,'Até 4 Sócios Grátis'],//idem ao plano 1
-                [3,4,10,'Até 2 funcionários grátis'],//idem ao plano 1
-                [3,4,11,'Até 200.000,00']//idem ao plano 1
+                [3,4,9,'Até 4 Sócios Grátis', 30.00, ['gt', 4]],//idem ao plano 1
+                [3,4,10,'Até 2 funcionários grátis', 5.00, ['gt', 2]],//idem ao plano 1
             ]
         ];
 
         foreach($planosCategoriasServicos as $psc){
             foreach($psc as $pscItem){
-                PlanoServicoCategoria::factory()->create([
+                PlanoCategoriaServico::factory()->create([
                     'plano_servico_id' => $pscItem[0],
                     'categoria_servico_id' => $pscItem[1],
                     'servico_id' => $pscItem[2],
                     'observacao' => $pscItem[3] ?? null,
-                    'licensed_id' => 1
+                    'valor' => $pscItem[4] ?? null,
+                    'condicoes' => $pscItem[5] ?? null,
                 ]);
             }
         }

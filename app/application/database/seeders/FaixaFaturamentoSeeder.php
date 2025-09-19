@@ -19,9 +19,6 @@ class FaixaFaturamentoSeeder extends Seeder
                 'De R$ 100.000,01 até R$ 150.000,00',
                 'De R$ 150.000,01 até R$ 200.000,00',
                 'De R$ 200.000,01 até R$ 300.000,00',
-                'De R$ 300.000,01 até R$ 500.000,00',
-                'De R$ 500.000,01 até R$ 1.000.000,00',
-                'Acima de R$ 1.000.000,01',
             ],
             //Lucro Presumido
             2 => [
@@ -31,6 +28,9 @@ class FaixaFaturamentoSeeder extends Seeder
                 'De R$ 100.000,01 até R$ 150.000,00',
                 'De R$ 150.000,01 até R$ 200.000,00',
                 'De R$ 200.000,01 até R$ 300.000,00',
+                'De R$ 300.000,01 até R$ 500.000,00',
+                'De R$ 500.000,01 até R$ 1.000.000,00',
+                'Acima de R$ 1.000.000,01',
             ],
         ];
         foreach ($faixasFaturamento as $regimeId => $faixas) {

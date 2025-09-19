@@ -19,7 +19,7 @@ class Socio extends Model
         'cpf',
         'email',
         'estado',
-        'estado_civil',
+        'estado_civil_id',
         'logradouro',
         'localidade',
         'municipio',
@@ -28,7 +28,7 @@ class Socio extends Model
         'participacao',
         'pro_labore',
         'profissao',
-        'regime_bens',
+        'regime_bens_id',
         'resp_rf',
         'telefone',
     ];

@@ -44,7 +44,7 @@ class PartnerValidateResquest extends FormRequest
             'nome' => ['string','max:255'],
             'cpf' => ['required','string', new \App\Rules\Cpf()],
             'empresa_id' => ['integer','exists:empresas,id'],
-            'estado_civil' => ['integer','exists:estados_civis,id'],
+            'estado_civil_id' => ['integer','exists:estados_civis,id'],
             'profissao' => ['string','max:255'],
             'participacao' => ['numeric','min:0','max:100'],
             'logradouro' => ['string','max:255'],
@@ -57,7 +57,7 @@ class PartnerValidateResquest extends FormRequest
             'pro_labore' => ['boolean'],
             'numero' => ['string','max:50'],
             'complemento' => ['string','max:255'],
-            'regime_bens' => ['numeric','exists:regimes_bens,id','required_if:estado_civil,2','in:1,2,3,4,5'],
+            'regime_bens_id' => ['numeric','exists:regimes_bens,id','required_if:estado_civil,2','in:1,2,3,4,5'],
             'resp_rf' => ['boolean'],
         ];
 

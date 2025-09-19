@@ -28,14 +28,23 @@ return new class extends Migration
             $table->string('descricao');
             $table->timestamps();
         });
+        Schema::create('areas_atividade', function (Blueprint $table) {
+            $table->id();
+            $table->string('descricao');
+            $table->boolean('ativo', 1)->default(true);
+        });
+        Schema::create('regimes_tributarios', function (Blueprint $table) {
+            $table->id();
+            $table->string('descricao');
+            $table->boolean('ativo', 1)->default(true);
+        });
         Schema::create('empresas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('people', 'id')->cascadeOnDelete();
-            $table->foreignId('faixa_faturamento_id')->constrained('faixas_faturamento')->cascadeOnDelete();
-            $table->foreignId('natureza_juridica_id')->constrained('naturezas_juridicas')->cascadeOnDelete();
-            $table->foreignId('cnae_id')->constrained('cnae')->cascadeOnDelete();
+            $table->foreignId('client_id')->constrained('people', 'id');
+            $table->foreignId('faixa_faturamento_id')->constrained('faixas_faturamento');
+            $table->foreignId('natureza_juridica_id')->constrained('naturezas_juridicas');
             $table->foreignId('area_atividade_id')->length(1)->constrained('areas_atividade')->comment('1 - Comércio, 2 - Serviços');
-            $table->foreignId('regime_tributario_id')->length(1)->constrained('regimes_tributarios')->comment('1 - Simples Nacional, 2 - Lucro Presumido');
+            $table->foreignId('regime_tributario_id')->constrained('regimes_tributarios')->comment('1 - Simples Nacional, 2 - Lucro Presumido');
             $table->string('nome_fantasia')->unique();
             $table->string('razao_social')->unique();
             $table->string('cnpj')->unique()->nullable();
@@ -65,16 +74,22 @@ return new class extends Migration
 
             $table->timestamps();
         });
+        Schema::create('empresa_cnae', function (Blueprint $table) {
+            $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
+            $table->foreignId('cnae_id')->constrained('cnae')->onDelete('cascade');
+            $table->primary(['empresa_id', 'cnae_id']);
+        });
     }
-
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('empresas');
+        Schema::dropIfExists('areas_atividade');
+        Schema::dropIfExists('regimes_tributarios');
         Schema::dropIfExists('faixas_faturamento');
         Schema::dropIfExists('naturezas_juridicas');
+        Schema::dropIfExists('cnae');        
+        Schema::dropIfExists('empresas');
     }
 };

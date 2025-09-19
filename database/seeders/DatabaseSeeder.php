@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        //$this->truncateTables();
+        $this->truncateTables();
 
         $regimeBensSeeder = new RegimeBensSeeder();
         $regimeBensSeeder->run();
@@ -48,9 +48,6 @@ class DatabaseSeeder extends Seeder
         $faixaFaturamentoSeeder = new FaixaFaturamentoSeeder();
         $faixaFaturamentoSeeder->run();
 
-        $planosSeeder = new PlanosSeeder();
-        $planosSeeder->run();
-
         $cnae = new CnaeSeeder();
         $cnae->run();
 
@@ -62,6 +59,9 @@ class DatabaseSeeder extends Seeder
 
         $auxiliaresSeeder = new AuxiliaresSeeder();
         $auxiliaresSeeder->run();
+
+        $planosSeeder = new PlanosSeeder();
+        $planosSeeder->run();
     }
     /**
      * Truncate all tables except migrations.

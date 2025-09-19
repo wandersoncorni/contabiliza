@@ -5,6 +5,7 @@ namespace App\Application\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Application\Models\RegimeTributario;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class FaixaFaturamento extends Model
 {
@@ -39,5 +40,10 @@ class FaixaFaturamento extends Model
     public function regimeTributario()
     {
         return $this->belongsTo(RegimeTributario::class, 'regime_tributario_id');
+    }
+
+    public function plano(): BelongsToMany
+    {
+        return $this->belongsToMany(PlanoServico::class, PlanoServicoFaixaFaturamento::class);
     }
 }

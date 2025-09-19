@@ -4,7 +4,7 @@ namespace App\Application\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoCategoriaServico;
 use App\Application\Models\PlanoServico;
 
 class Plano extends BaseController
@@ -30,7 +30,7 @@ class Plano extends BaseController
         
         foreach($data as $item){
             try{
-                PlanoServicoCategoria::firstOrCreate([
+                PlanoCategoriaServico::firstOrCreate([
                     'plano_servico_id'     => $item['plano_servico_id'],
                     'categoria_servico_id' => $item['categoria_servico_id'],
                     'servico_id'           => $item['servico_id'],

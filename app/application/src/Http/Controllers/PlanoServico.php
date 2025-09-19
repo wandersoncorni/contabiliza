@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Application\Models\PlanoServico as PlanoServicoModel;
-use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoCategoriaServico;
 
 class PlanoServico
 {
@@ -28,16 +28,8 @@ class PlanoServico
                 ['ativo', true], 
                 ['licensed_id', $lid]
             ])
-            ->with(['valorPlanoServico' => function ($query)use($atvid) {
-                $query->select('id', 'plano_servico_id', 'valor', 'rotulo')
-                ->where('area_atividade_id', $atvid)
-                ->where('ativo', true);
-            }])
-            ->with([
-                'plano.categoria:id,nome', 
-                'plano.servico:id,nome',
-                'plano.servico.valor:servico_id,valor,condicoes'
-            ])
+            ->with('planoServicoFaixasFaturamento')
+            ->with('servicos')
             ->get();
         return response()->json($PlanoServicos);
     }

@@ -47,13 +47,6 @@
                         <td class="data"><div class="skeleton"></td>
                         <td class="data"><div class="skeleton"></td>
                     </tr>
-                    <tr>
-                        <th scope="row" class="text-left fw-bold">Faturamento mensal *</th>
-                        <td class="data"><div class="skeleton"></td>
-                        <td class="data"><div class="skeleton"></td>
-                        <td class="data"><div class="skeleton"></td>
-                        <td class="data"><div class="skeleton"></td>
-                    </tr>
                 </tbody>
                 <tfoot>
                     <tr class="total-row">
@@ -64,6 +57,7 @@
                 </tfoot>
             </table>
             <div class="obs" style="margin-top: -50px; margin-bottom: 65px;"></div>
+            <div id="plan-obs"></div>
         </div>
     </div>
 </div>

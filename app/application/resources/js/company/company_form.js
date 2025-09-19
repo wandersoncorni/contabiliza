@@ -65,8 +65,12 @@ export function setCompanyData(data) {
             return;
         }
 
-        if(campo == 'cnae_id') {
-            (async () => await setSelectValue('cnae_id[]', companyData[campo]))();
+        if(campo == 'cnae') {
+            const cnaeIds = [];
+            companyData.cnae.forEach(cnae => {
+                cnaeIds.push(cnae.cnae_id);
+            });
+            (async () => await setSelectValue('cnae_id[]', cnaeIds))();
             return;
         }
 
@@ -237,7 +241,7 @@ export function saveCompany() {
         },
     };
     //Se o ID não existir, cria um novo registro
-    if ($('#form-company #id').val() == '') {
+    if ($('#form-company [name="id"]').val() == '') {
         formData = new FormData($('#form-company')[0]);
         config.body = formData;
     }
@@ -274,7 +278,7 @@ export function saveCompany() {
         if (response.ok) {
             companiesList.push(data);
             loadCompaniesTable();
-            $('#form-company [name="id"]').val(data.id)
+            setCompanyData(data);
             Swal.fire({
                 icon: 'success',
                 title: 'Empresa salva com sucesso'
@@ -337,14 +341,21 @@ export function hasChanged() {
     const formData = new FormData($('#form-company')[0]);
     let changed = false;
     for (const [key, value] of formData) {
-        if (changed == true) return changed;
+        if(changed) return true;
         if (key == 'id') continue;
-        if (companyData == null){
-            changed = value !== '';
-            continue;
-        }
+        if (companyData == null && value !== '') return changed;
         if(key == 'cnae_id[]') {
-            changed = !(companyData['cnae_id']).includes(value);
+            const cnaeIds = $('#form-company [name="cnae_id[]"]').val();
+            companyData.cnae.forEach(c => {
+                if (!cnaeIds.includes((c.cnae_id).toString())) {
+                    changed =  true;
+                }
+            });
+            cnaeIds.forEach(cnaeId => {
+                if (companyData.cnae.find((cd) => cd.cnae_id == cnaeId) == undefined) {
+                    changed =  true;
+                }
+            });            
             continue;
         }
         if (key == 'capital_social') {

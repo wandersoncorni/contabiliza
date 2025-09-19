@@ -69,7 +69,7 @@ export function getAddress(field) {
             $(`[data-address="${seletor}"]`).siblings('.invalid-feedback').remove();
             $(`[data-address="${seletor}"].is-invalid`).removeClass('is-invalid');
             const data = await response.json();
-            if(data.erro){
+            if (data.erro) {
                 addInvalidFeedback('[name="cep"]', 'CEP inválido!');
                 $(`[data-address="${seletor}"]:not([name="cep"])`).val('');
                 return;
@@ -170,12 +170,12 @@ export function cpfFormat(field) {
     $(field).val(value);
 }
 // aplica a máscara no telefone
-export function foneFormat(field) {
+export function foneFormat(field) { 
     var value = $(field).val().replace(/\D/g, ''); // remove tudo que não for número
 
     if (value.length > 11) value = value.substring(0, 11); // limita a 11 dígitos
 
-    if (value.length >= 10) {
+    if (value.length == 11) {
         // celular com 9 dígitos
         value = value.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
     } else if (value.length >= 6) {
@@ -184,7 +184,7 @@ export function foneFormat(field) {
     } else if (value.length >= 3) {
         value = value.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
     } else if (value.length > 0) {
-        value = value.replace(/^(\d{0,2})$/, '($1');
+        value = value.replace(/^(\d{0,2})$/, '($1)');
     }
 
     $(field).val(value);
@@ -217,4 +217,48 @@ export async function listStates(nameField) {
     Object.keys(statesList).forEach(state => {
         $(nameField).append($('<option />', { value: statesList[state].sigla, text: statesList[state].descricao }));
     });
+}
+/**
+ * Remove um item do array
+ * @param {array} arr 
+ * @param {string} id 
+ * @returns
+ */
+export const removeFromArray = (arr, id) => {
+    const idx = arr.findIndex(item => item && item.id == id); console.log(idx)
+    if (idx === -1) return arr;
+    arr.splice(idx, 1);
+    return arr;
+}
+/**
+ * Valida um CPF
+ * @param {string} cpf 
+ * @returns boolean
+ */
+export function isValidCPF(cpf) {
+    cpf = (cpf || '').replace(/\D/g, '');
+    if (cpf.length !== 11) return false;
+
+    // rejeita sequências iguais (ex: 11111111111)
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+    // primeiro dígito verificador
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+        sum += parseInt(cpf.charAt(i)) * (10 - i);
+    }
+    let rest = sum % 11;
+    let dig1 = (rest < 2) ? 0 : 11 - rest;
+    if (dig1 !== parseInt(cpf.charAt(9))) return false;
+
+    // segundo dígito verificador
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+        sum += parseInt(cpf.charAt(i)) * (11 - i);
+    }
+    rest = sum % 11;
+    let dig2 = (rest < 2) ? 0 : 11 - rest;
+    if (dig2 !== parseInt(cpf.charAt(10))) return false;
+
+    return true;
 }

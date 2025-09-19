@@ -21,8 +21,8 @@ class Auxiliares
     public function listarEstadosCivis()
     {
         $lst = DB::table('estados_civis')
-            ->select('id', 'descricao')
-            ->orderBy('descricao')
+            ->select('id', 'nome')
+            ->orderBy('nome')
             ->where('ativo', true)
             ->get();
         return response()->json($lst);

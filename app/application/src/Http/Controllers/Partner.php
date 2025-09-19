@@ -61,7 +61,7 @@ class Partner
                 $partner->delete();
             }
             // Log the error or handle it as needed
-            Log::channel('database')->error('Erro ao criar sócio: ' . $e->getMessage());
+            Log::channel('database')->error('Erro ao criar sócio: ' . $e->getMessage());dd($e->getMessage());
             if(str_contains($e->getMessage(), 'Duplicate entry')) {
                 return response()->json(['error' => 'Já existe um sócio com este CPF para esta empresa.'], 409);
             }
@@ -74,12 +74,13 @@ class Partner
     {
         $data = $request->all();
         $sid = $request->id;
+        $client_id = session('client_context', auth()->user()->person->id);
         unset($data['id']);
         // Força a atualização do regime de bens
         if(isset($data['estado_civil'])){
             $data['regime_bens'] = $data['estado_civil'] == 2 ? $data['regime_bens'] : null;
         }
-        if(Socio::where('id', $sid)->update($data)) {
+        if(Socio::where('id', $sid)->where('client_id', $client_id)->update($data)) {
             return response()->json(Socio::find($sid), 200);
         }
         
@@ -88,23 +89,37 @@ class Partner
 
     public function delete($id): JsonResponse
     {
-        // Logic to delete a partner
-        return response()->json(['message' => 'Partner deleted successfully']);
-    }
+        $client_id = session('client_context', auth()->user()->person->id);
+        $id = Validator::make(['id' => $id],[
+            'id' => 'required|integer|exists:socios,id,client_id,' . $client_id
+        ],[
+            'id.required' => 'O id do sócio é obrigatorio',
+            'id.exists' => 'O id do sócio informado nao existe',
+        ])->validate()['id'];
 
+        if(Socio::where('client_id', $client_id)->where('id', $id)->delete()){ 
+            return response()->json(['message' => 'Sócio excluido com sucesso'], 200);
+        }
+        return response()->json(['message' => 'Ocorreu um erro ao excluir o sócio'], 500);
+    }
+    /**
+     * Busca um registro pelo CPF
+     * 
+     * @param Request $request 
+     * @return JsonResponse
+     */
     public function searchPartner(Request $request): JsonResponse
     {
         $query = Validator::make($request->all(), 
-        ['term' => 'required|numeric|min:11'],
+        ['term' => 'required|regex:/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/'],
         ['term.required' => 'Termo de busca obrigatório e deve ser numérico de 11 digitos.'])->validate();
 
         $partner = Socio::where('client_id', $this->client_id)
-            ->where('cpf', '=', substr($query['term'], 0, 3) . '.' . substr($query['term'], 3, 3) . '.' . substr($query['term'], 6, 3) . '-' . substr($query['term'], 9, 2))
+            ->where('cpf', '=', $query['term'])
             ->first();
         if(!$partner) {
             return response()->json(['message' => 'Sócio não encontrado'], 404);
         }
-
         return response()->json($partner, 200);
     }
 }

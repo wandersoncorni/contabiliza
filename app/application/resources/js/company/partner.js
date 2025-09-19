@@ -4,7 +4,7 @@
  */
 'use strict';
 
-import { formatPercentage, removeInvalidFeedback, addInvalidFeedback } from '../helpers.js';
+import { formatPercentage, removeInvalidFeedback, addInvalidFeedback, removeFromArray, isValidCPF } from '../helpers.js';
 import { createPartnerForm } from './partner_form.js';
 
 let partnersData = [];
@@ -30,26 +30,55 @@ export function init() {
             });
             return;
         }
+        const sid = $(this).parents('.accordion-body').first().find('[name="id"]').val()
+        if (sid) {
+            Swal.fire({
+                title: 'Atenção',
+                text: 'Deseja realmente excluir esse sócio?',
+                icon: 'warning',
+                showDenyButton: true,
+                confirmButtonText: 'Sim',
+                denyButtonText: 'Não'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/v1/partner/${sid}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    }).then(async response => {
+                        const data = await response.json();
+                        if (response.ok) {
+                            $(this).closest('.accordion').remove();
+                            partnersData = removeFromArray(partnersData, sid)
+                            progressUpdate();
+                            return;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Erro ao excluir sócio',
+                            text: data.error ?? 'Erro desconhecido',
+                        });
+                    });
+                }
+            });
+            return;
+        }
+
         $(this).closest('.accordion').remove();
         progressUpdate();
     });
     //Busca de sócio pela API ao clicar no botão de busca
     $('#partners-container').on('input', '[name="cpf"]', function () {
         const val = $(this).val().replace(/[^0-9]/g, '');
-        if (val.length < 11) return;
         const form = $(this).parents('form');
-        form.find('input, select').each(function () {
-            $(this).addClass('skeleton').prop('disabled', true);
-            
-            if(!['cpf', 'resp_rf', 'pro_labore'].includes($(this).attr('name'))) {
-                $(this).val('');
-            }
-        });
-        $('[name="resp_rf"]:first, [name="pro_labore"]:first').click();        
-        serachPartner(form.attr('id'),val);
-        $('.skeleton').removeClass('skeleton').prop('disabled', false);
-        if(!$(`${form} [name="estado_civil"]`).val() == 2) {
-            $(`${form}[name="regimes_bens"]`).prop('disabled', true);
+        const formId = form.attr('id');
+
+        if (val.length < 11) return;
+        searchPartner($(this));
+        $('.skeleton').removeClass('skeleton');
+        if (!$(`${formId} [name="estado_civil_id"]`).val() == 2) {
+            $(`${formId}[name="regimes_bens_id"]`).prop('disabled', true);
         }
     });
 }
@@ -122,15 +151,20 @@ export function listPartners() {
  */
 function fillForm(form, data) {
     Object.keys(data).forEach(key => {
-        $(`${form} [name="${key}"]`).val(data[key]);
-        if (key == 'estado_civil') {
-            const disabled = $(`${form} [name="estado_civil"]`).val() == 2 ? false : true;
-            $(`${form} [name="regime_bens"]`).prop('disabled', disabled).val('');
+        if (key == 'regime_bens_id') {
+            const disabled = $(`${form} [name="estado_civil_id"]`).val() != 2;
+            $(`${form} [name="regime_bens_id"]`).prop('disabled', disabled).val('');
         }
+        if(key == 'pro_labore') {
+            $(`${form} [name="pro_labore"][value="${data.pro_labore}"]`).prop('checked', true);
+        }
+        $(`${form} [name="${key}"]`).val(data[key]);
         if (key == 'participacao') $(`${form} [name="${key}"]`).focus().blur();
     });
 }
-
+/**
+ * Salva os dados dos forms do wizard
+ */
 export function savePartner() {
     $('.alert').remove();
     for (const form of $('[id^="form-partner"]')) {
@@ -138,8 +172,8 @@ export function savePartner() {
         let isValid = false;
         removeInvalidFeedback(`[id="${formId}"]`);
         // Valida o formulario
-        if ($(`#${formId} [name="estado_civil"]`).val() == 2) {
-            $(`#${formId} [name="regime_bens"]`).prop('required', true);
+        if ($(`#${formId} [name="estado_civil_id"]`).val() == 2) {
+            $(`#${formId} [name="regime_bens_id"]`).prop('required', true);
         }
 
         if ($(`#${formId}`)[0].checkValidity() == false) {
@@ -201,12 +235,10 @@ export function savePartner() {
                     icon: 'success',
                 })
                 fillForm(`#${formId}`, data);
-                if (partnersData.length == 0) {
-                    partnersData.push(data);
-                    progressUpdate();
-                    return;
-                }
-                partnersData.filter((partner, index) => { partner.id == data.id ? partnersData[index] = data : true });
+                const index = partnersData.findIndex(partner => partner.id == data.id);
+                if (index != -1) partnersData[index] = data;
+                else partnersData.push(data);
+                progressUpdate();
                 return;
             }
 
@@ -264,6 +296,18 @@ export function checkPartnersForm() {
             return;
         }
     }
+    let totalParticipacao = 0;
+    $('[id^="form-partner"] [name="participacao"]').each(function () {
+        totalParticipacao += parseFloat($(this).val().replace('[^\d\.]', ''));
+    });
+    if (totalParticipacao != 100) {
+        isValid = false;
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'A soma das participações dos sócios deve ser igual a 100%.',
+        })
+    }
     return isValid;
 }
 /**
@@ -273,7 +317,7 @@ export function checkPartnersForm() {
  */
 function formHasChanged(formId) {
     // Retorna se avariavel nao foi preenchida e o id do form não foi preenchido
-    if (partnersData.length == 0 && $(`#${formId} [name="id"]`).val() == '') return [];
+    if (partnersData.length == 0 || $(`#${formId} [name="id"]`).val() == '') return [];
 
     const formData = new FormData($(`#${formId}`)[0]);
     const partnerData = partnersData.find(partner => partner.id == $(`#${formId} [name="id"]`).val());
@@ -281,7 +325,7 @@ function formHasChanged(formId) {
     for (const [key, value] of formData) {
         if (key == 'id') continue;
 
-        if (partnerData[key] == null) {
+        if (partnerData[key] == null || partnerData[key] == undefined) {
             if (value != '') {
                 fields.push(key);
             }
@@ -305,9 +349,29 @@ export function hasChanged() {
     }
     return false;
 }
-// Executa a busca do sócio pela API
-function serachPartner(formId,searchTerm) {
-    fetch(`/api/v1/partner-search?term=${searchTerm}`).then(async response => {
+/**
+ * Executa a busca do sócio pela API
+ * @param {object} input O objeto jQuery do formulário
+ */
+function searchPartner(input) {
+
+    const formId = input.parents('form').attr('id');
+    let isFilled = false;
+
+    $(`#${formId} [type="text"]`).each(function () {
+        if ( !['cpf', 'participacao'].includes($(this).prop('name')) && $(this).val() != '') isFilled = true;
+    });
+    
+    if (isFilled) return;
+
+    input.removeClass('is-invalid');
+    input.next('.invalid-feedback').remove();
+    if (isValidCPF(input.val()) == false) {
+        input.addClass('is-invalid');
+        addInvalidFeedback(`#${formId} [name="cpf"]`, 'CPF inválido');
+        return;
+    }
+    fetch(`/api/v1/partner-search?term=${encodeURIComponent(input.val())}`).then(async response => {
         const data = await response.json();
         if (!response.ok || !data) {
             return null;

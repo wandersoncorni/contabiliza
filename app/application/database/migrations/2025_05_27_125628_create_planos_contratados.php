@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('pagamento')->default(json_encode([]));
             $table->boolean('ativo')->nullable()->default(null);//Se null entao o plano é considerado em elaboração. Se 0, plano inativo. Se 1, plano ativo
             $table->timestamps();
+            $table->softDeletes();
         });
     }
     /**

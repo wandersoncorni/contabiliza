@@ -14,7 +14,7 @@ import {
     listarAreasAtividade,
     listarNaturezasJuridicas } from './company_form.js';
 import { init as partnerInit, savePartner, checkPartnersForm, listPartners, hasChanged as partnerHasChanged } from './partner.js';
-import { init as planInit, savePlan, loadPlans, checkPlanForm, setPlanData, hasChanged as planHasChanged } from './plan.js';
+import { init as planInit, savePlan, loadPlans, checkPlanForm, hasChanged as planHasChanged } from './plan.js';
 import { savePayment, loadPayment, hasChanged as paymentHasChanged } from './payment.js';
 import * as stepWizard from './step-wizard.js';
 import { currencyFormat } from '../helpers.js';
@@ -24,7 +24,6 @@ export let companiesList = [];
 $(function () {
     // Carrega as tabelas
     loadCompaniesTable();
-
     companyFormInit();
     partnerInit();
     planInit();
@@ -308,22 +307,6 @@ function resetForms() {
     $('.step-wizard-list li').removeClass('current-item').eq(0).addClass('current-item');
     $('#nav-tabFormCompany .tab-pane').removeClass('active show').eq(0).addClass('active show');
     $('#nav-tabFormCompany form').trigger('reset');
-    setPlanData({
-        plano: {
-            valor: '',
-            pro_labore_obs: '',
-            valor_unitario_pro_labore: '',
-            total_socios: '',
-            valor_unitario_prolabore: '',
-            total_valor_prolabore: '',
-            folha_pagamento_obs: '',
-            valor_unitario_folha_pagamento: '',
-            total_folha_pagamento: '',
-            valor_folha_pagamento: '',
-            faixa_faturamento_obs: '',
-            valor_faixa_faturamento: ''
-        }
-    });
     $('#partners-container form').remove();
     $('#btn-prev').prop('disabled', true);
     $('#btn-next').prop('disabled', false);
