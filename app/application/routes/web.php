@@ -8,44 +8,11 @@ Route::middleware(['auth:sanctum','verified'])->group(function () {
     })->name('view.app');
 
     Route::get('/painel', function () {
+        if(session('rule_context') != 'client'){
+            return view('admin::'.session('rule_context').'.index');
+        }
         return view('application::'.session('rule_context').'.index');
-    })->name('view.painel');
-
-    Route::middleware(['haspermission:access.admin'])->group(function () { 
-        Route::get('/licensed', function () {
-            return view('application::admin.licensed');
-        })->name('view.licensed');
-    });
-
-    Route::middleware(['haspermission:access.manager'])->group(function () { 
-        Route::get('/consultants', function () {
-            return view('application::manager.consultants');
-        })->name('view.consultants');
-
-        Route::get('/clients', function () {
-            return view('application::manager.clients');
-        })->name('view.clients');
-
-        Route::get('/partners', function () {
-            return view('application::manager.partners');
-        })->name('view.partners');
-
-        Route::get('/agents', function () {
-            return view('application::manager.agents');
-        })->name('view.agents');
-
-        Route::get('/services-plans', function () {
-            return view('application::manager.services-plans.index');
-        })->name('view.services-plans');
-
-        Route::get('/billing-plans', function () {
-            return view('application::manager.billing-plans');
-        })->name('view.billing-plans');
-
-        Route::get('/portfolios', function () {
-            return view('application::manager.portfolios');
-        })->name('view.portfolios');
-    });
+    })->name('view.painel');    
 
     Route::middleware(['haspermission:access.client'])->group(function () {
         Route::get('/agents', function () {

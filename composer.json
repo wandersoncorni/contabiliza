@@ -32,12 +32,15 @@
             "App\\Application\\": "app/application/src",
             "App\\Logger\\": "app/logger/src",
             "App\\Admin\\":"app/admin/src",
+            "App\\Financial\\":"app/financial/src",
             "App\\AccessControl\\Database\\Factories\\": "app/access-control/database/factories",
             "App\\Application\\Database\\Factories\\": "app/application/database/factories",
             "App\\Admin\\Database\\Factories\\": "app/admin/database/factories",
+            "App\\Financial\\Database\\Factories\\": "app/financial/database/factories",
             "App\\AccessControl\\Database\\Seeders\\": "app/access-control/database/seeders",
             "App\\Application\\Database\\Seeders\\": "app/application/database/seeders",
             "App\\Admin\\Database\\Seeders\\": "app/admin/database/seeders",
+            "App\\Financial\\Database\\Seeders\\": "app/financial/database/seeders",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         },        
@@ -49,7 +52,9 @@
         "psr-4": {
             "Tests\\": "tests/",
             "App\\AccessControl\\Tests\\": "app/access-control/tests",
-            "App\\Application\\Tests\\": "app/application/tests"
+            "App\\Application\\Tests\\": "app/application/tests",
+            "App\\Admin\\Tests\\": "app/admin/tests",
+            "App\\Financial\\Tests\\": "app/financial/tests"
         }
     },
     "scripts": {

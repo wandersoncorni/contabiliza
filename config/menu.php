@@ -44,7 +44,7 @@ return [
     [
         'label' => 'Faturas',
         'route' => '/faturas',
-        'icon' => 'heroicon-tiket',
+        'icon' => 'heroicon-ticket',
         'roles' => ['manager'],
     ],
     [
@@ -76,5 +76,11 @@ return [
         'route' => '/companies',
         'icon' => 'heroicon-modern-house',
         'roles' => ['client'],
+    ],
+    [
+        'label' => 'Financeiro',
+        'route' => '/financial',
+        'icon' => 'heroicon-currency-dollar',
+        'roles' => ['manager'],
     ]
 ];

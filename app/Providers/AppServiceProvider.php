@@ -25,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(base_path('app/access-control/resources/views'), 'access-control');
         $this->loadViewsFrom(base_path('app/application/resources/views'), 'application');
+        $this->loadViewsFrom(base_path('app/admin/resources/views'), 'admin');
+        $this->loadViewsFrom(base_path('app/financial/resources/views'), 'financial');
 
         $modules = glob(app_path() . '/*', GLOB_ONLYDIR);
         foreach ($modules as $module) {
