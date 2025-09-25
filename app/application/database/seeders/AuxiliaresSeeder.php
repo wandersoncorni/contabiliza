@@ -15,14 +15,14 @@ class AuxiliaresSeeder extends Seeder
     {
         // Inserir estados civis
         DB::table('estados_civis')->insert([
-            ['descricao' => 'Solteiro', 'ativo' => true],
-            ['descricao' => 'Casado', 'ativo' => true],
-            ['descricao' => 'Divorciado', 'ativo' => true],
-            ['descricao' => 'Viúvo', 'ativo' => true],
-            ['descricao' => 'Separado', 'ativo' => true],
-            ['descricao' => 'Desquitado', 'ativo' => true],
-            ['descricao' => 'União Estável', 'ativo' => true],
-            ['descricao' => 'Outros', 'ativo' => true],
+            ['nome' => 'Solteiro', 'ativo' => true],
+            ['nome' => 'Casado', 'ativo' => true],
+            ['nome' => 'Divorciado', 'ativo' => true],
+            ['nome' => 'Viúvo', 'ativo' => true],
+            ['nome' => 'Separado', 'ativo' => true],
+            ['nome' => 'Desquitado', 'ativo' => true],
+            ['nome' => 'União Estável', 'ativo' => true],
+            ['nome' => 'Outros', 'ativo' => true],
 
         ]);
         // Inserir estados

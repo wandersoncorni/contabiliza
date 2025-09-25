@@ -5,18 +5,26 @@
 
 import { currencyFormat, parseCurrencyToFloat, addInvalidFeedback, removeInvalidFeedback } from '../helpers.js';
 
-let plansData = null;
+let plansData = [];
 // Dados do plano de serviço. Dados de pagamento é dependente
 export let planData = null;
 
-export function init() {
-    //Monta o plano de serviço
-    $('#plano_id').on('change', function () {
-        buildPlan($(this).val());
+export function init(){
+    $('#btn-next').on('click', function () {
+        if ($('#nav-tabFormCompany .tab-pane.active').prop('id') == 'nav-partners' && planData) setPlanData(planData);
+    });
+
+    $('[name="plano_id"]').on('change', function () {
+        setPlanData({
+            id: $('#form-plan [name="id"]').val(),
+            plano: { id: $(this).val() }
+        });
     });
 }
+
 //Carrega os dados do plano de serviço, se existir
 async function loadPlan() {
+    setPlanData();
     $('#table-plan tbody tr td.data').html('<div class="skeleton"></div>');
     try {
         const empresa_id = $('#form-company [name="id"]').val();
@@ -51,54 +59,77 @@ async function loadPlan() {
         console.error('Erro ao carregar os planos de serviço:', error);
     }
 }
-//Carrega os dados do plano de serviço na tabela
-export function setPlanData(data) {
-    $('#form-plan [name="id"]').val(data.id ?? '');
-    $('#plano_id').val(`${data.plano.id}.${data.plano.valor_plano_servico_id}`);//Id do plano de serviço + id do valor do plano de serviço
-    //Plano
-    $('#table-plan tbody tr:nth-child(1) td:nth-child(3)').text(currencyFormat(data.plano.valor));
-    $('#table-plan tbody tr:nth-child(1) td:nth-child(4)').text('-');
-    $('#table-plan tbody tr:nth-child(1) td:nth-child(5)').text(currencyFormat(data.plano.valor));
-    //Prolabore
-    $('#table-plan tbody tr:nth-child(2) td:nth-child(2)').text(data.plano.pro_labore_obs);
-    $('#table-plan tbody tr:nth-child(2) td:nth-child(3)').text(currencyFormat(data.plano.valor_unitario_pro_labore));
-    $('#table-plan tbody tr:nth-child(2) td:nth-child(4)').text(data.plano.total_socios);
-    $('#table-plan tbody tr:nth-child(2) td:nth-child(5)').text(currencyFormat(data.plano.total_valor_prolabore));
-    //Folha de pagamento
-    $('#table-plan tbody tr:nth-child(3) td:nth-child(2)').text(data.plano.folha_pagamento_obs);
-    $('#table-plan tbody tr:nth-child(3) td:nth-child(3)').text(currencyFormat(data.plano.valor_unitario_folha_pagamento));
-    $('#table-plan tbody tr:nth-child(3) td:nth-child(4)').text(data.plano.total_folha_pagamento);
-    $('#table-plan tbody tr:nth-child(3) td:nth-child(5)').text(currencyFormat(data.plano.valor_folha_pagamento));
-    //Faixa de faturamento
-    $('#table-plan tbody tr:nth-child(4) td:nth-child(2)').text(data.plano.faixa_faturamento_obs);
-    $('#table-plan tbody tr:nth-child(4) td:nth-child(3)').text(currencyFormat(data.plano.valor_faixa_faturamento));
-    $('#table-plan tbody tr:nth-child(4) td:nth-child(4)').text('-');
-    $('#table-plan tbody tr:nth-child(4) td:nth-child(5)').text(currencyFormat(data.plano.valor_faixa_faturamento));
+/**
+ * Carrega os dados do plano de serviço na tabela
+ * @param {object} data - Dados do plano de serviço que foi salvo, se existir
+ */
+export function setPlanData(data = {}) {
+    const planoContratadoId = data.id ?? $('#form-plan [name="id"]').val();// Define o id do plano salvo se existir
+    const planoId = data?.plano?.id ?? $('#form-plan [name="plano_id"]').val();//Id do plano de serviço + id do valor
+    $('#plano_id').val(planoId);
+    if(!planoId) return;
+    const plano = plansData.find(p => p.id == planoId);
+    const valorPlano = plano?.plano_servico_faixas_faturamento.find(d => d.faixa_faturamento_id == $('#form-company [name="faixa_faturamento_id"]').val() && d.regime_tributario_id == $('#form-company [name="regime_tributario_id"]').val()).valor;
+  
+    // Prolabore
+    const prolabore = plano?.servicos.find(s => s.servico.nome == 'Pró-labore dos sócios');
+    const proLaboreObs = prolabore?.observacao;
+    const valorPlanoProLabore = prolabore?.valor;
+    const totalSocios = $('#partners-container [name="pro_labore"][value="1"]:checked').length;
+    const valorTotalProLabore = (()=>{
+        const condicaoValor = prolabore.condicoes ?? [];
+        if(condicaoValor[0] == 'gt' && totalSocios > condicaoValor[1]) {
+            return (totalSocios - condicaoValor[1]) * valorPlanoProLabore;
+        } 
+        return 0;
+    })();
+    // Folha de pagamento
+    const folhaPagamento =  plano?.servicos.find(s => s.servico.nome == 'Folha de pagamento');
+    const obsFolhaPagamento = folhaPagamento?.observacao;
+    const valorPlanoFolhaPagamento = folhaPagamento?.valor;
+    const totalFolhaPagamento = $('#total_funcionarios').val();
+    const valorTotalFolhaPagamento = (()=>{
+        const condicaoValor = folhaPagamento.condicoes ?? [];
+        if(condicaoValor[0] == 'gt' && totalFolhaPagamento > condicaoValor[1]) {
+            return (totalFolhaPagamento - condicaoValor[1]) * valorPlanoFolhaPagamento;
+        }
+        return 0;
+    })();
 
-    let planoAlterado = false;
-    if(data.id){
-        if($('#partners-container form').length != data.plano.total_socios){
-            planoAlterado = true;
-        }
-        if($('#total_funcionarios').val() != data.plano.total_folha_pagamento){
-            planoAlterado = true;
-            $('#table-plan tbody tr:nth-child(3) td:nth-child(4)').html(`<span class="text-danger">${$('#total_funcionarios').val()}</span>`);
-        }
-
-        if(planoAlterado){
-            sum();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atenção',
-                text: 'O plano de serviço foi alterado, salve as alterações.',
-            });
-        }
-    }
+    const info = `Base do valor do plano de assinatura:
+    <ul>
+        <li> Faixa de faturamento: <b>${($('#form-company [name="faixa_faturamento_id"] option:selected').text())}</b></li>
+        <li> Regime tributário: <b>${$('#form-company [name="regime_tributario_id"] option:selected').text()}</b></li>
+    </ul>`;
     
+    $('#form-plan [name="id"]').val(planoContratadoId);
+    $('#plano_id').val(planoId);//Id do plano de serviço + id do valor do plano de serviço
+    //Plano
+    $('#table-plan tbody tr:nth-child(1) td:nth-child(3)').text(currencyFormat(valorPlano));
+    $('#table-plan tbody tr:nth-child(1) td:nth-child(4)').text('-');
+    $('#table-plan tbody tr:nth-child(1) td:nth-child(5)').text(currencyFormat(valorPlano));
+    //Prolabore
+    $('#table-plan tbody tr:nth-child(2) td:nth-child(2)').text(proLaboreObs);
+    $('#table-plan tbody tr:nth-child(2) td:nth-child(3)').text(currencyFormat(valorPlanoProLabore));
+    $('#table-plan tbody tr:nth-child(2) td:nth-child(4)').text(totalSocios);
+    $('#table-plan tbody tr:nth-child(2) td:nth-child(5)').text(currencyFormat(valorTotalProLabore));
+    //Folha de pagamento
+    $('#table-plan tbody tr:nth-child(3) td:nth-child(2)').text(obsFolhaPagamento);
+    $('#table-plan tbody tr:nth-child(3) td:nth-child(3)').text(currencyFormat(valorPlanoFolhaPagamento));
+    $('#table-plan tbody tr:nth-child(3) td:nth-child(4)').text(totalFolhaPagamento);
+    $('#table-plan tbody tr:nth-child(3) td:nth-child(5)').text(currencyFormat(valorTotalFolhaPagamento));
+
+    $('#plan-obs').html(
+        $('<div />',{class: 'alert alert-info'}).html(info)
+    );
+    //Soma os valores   
     sum();
 }
-// Carregar os dados dos planos para lista do select
+/**
+ * Carregar os dados dos planos para lista do select 
+ */
 export async function loadPlans() {
+    if(plansData.length) return;
     try {
         const areaAtividadeId = $('[name="area_atividade_id"]').val();
         const response = await fetch(`/api/v1/service-plans/${areaAtividadeId}`, {
@@ -115,36 +146,11 @@ export async function loadPlans() {
         const data = await response.json();
         const options = ['<option value="">Selecione um plano</option>'];
         data.forEach(plan => {
-            plan.valor_plano_servico.forEach(val => {
-                options.push(`<option value="${plan.id}.${val.id}">${plan.nome} - ${val.rotulo}</option>`);
-            });
+            options.push(`<option value="${plan.id}">${plan.nome}</option>`);
         });
         plansData = data;
         $('#plano_id').removeClass('skeleton').html(options.join(''));
         loadPlan();
-    } catch (error) {
-        console.error('Erro ao carregar os planos de serviço:', error);
-    }
-}
-
-async function loadAdicionalFaixasFaturamento() {
-    try {
-        const pid = $('#plano_id').val().split('.')[0];
-        const ffid = $('[name="faixa_faturamento_id"]').val();
-        const response = await fetch(`/api/v1/faixas-faturamento/${pid}/${ffid}`);
-        const data = await response.json();
-
-        $('#table-plan tbody tr:nth-child(4) td:nth-child(2)').text(data.faixa_faturamento.descricao + '**');
-        $('#table-plan tbody tr:nth-child(4) td:nth-child(3)').text(currencyFormat(data.valor));
-        $('#table-plan tbody tr:nth-child(4) td:nth-child(5)').text(currencyFormat(data.valor));
-
-        const regime = $('#regime_tributario option:checked').text();
-        const text = ` Obs: <ul class="list-unstyled">
-                    <li>*  Adicional cobrado conforme a faixa de faturamento.</li>
-                    <li>** Valor para optantes do regime de tributação "<b>${data.faixa_faturamento.regime_tributario.descricao}</b>"</li>
-                    </ul>`;
-        $('.obs').html(text);
-        sum();
     } catch (error) {
         console.error('Erro ao carregar os planos de serviço:', error);
     }
@@ -154,22 +160,6 @@ async function loadAdicionalFaixasFaturamento() {
  * Deve aguardar o carregamento das faixas de faturamento
  */
 function sum() {
-    if (!plansData) return;
-    // Calcula o valor da coluna preço vezes quantidade e seta o valor na coluna total
-    const plano = plansData.find(planoServico => planoServico.id == $('#plano_id').val().split('.')[0]).plano;
-    const valoresServicos = plano.filter(item => item.servico.valor != null);
-
-    if(valoresServicos.length == 0){
-        const valorProLabore = valoresServicos.find(item => item.servico.nome == 'Pró-labore dos sócios')?.servico.valor.valor ?? 0;
-        const valorFolhaPagamento = valoresServicos.find(item => item.servico.nome == 'Folha de pagamento')?.servico.valor.valor ?? 0;
-        const totalProLabore = parseInt($('#table-plan tbody tr:nth-child(2) td:nth-child(4)').text()) * valorProLabore;
-        const totalFolhaPagamento = parseInt($('#table-plan tbody tr:nth-child(3) td:nth-child(4)').text()) * valorFolhaPagamento;
-        $('#table-plan tbody tr:nth-child(2) td:nth-child(3)').text(currencyFormat(valorProLabore));
-        $('#table-plan tbody tr:nth-child(2) td:nth-child(5)').text(currencyFormat(totalProLabore));
-        $('#table-plan tbody tr:nth-child(3) td:nth-child(3)').text(currencyFormat(valorFolhaPagamento));
-        $('#table-plan tbody tr:nth-child(3) td:nth-child(5)').text(currencyFormat(totalFolhaPagamento));
-    }
-
     let totalBill = 0;
     $('#table-plan tbody tr td:nth-child(5)').each(function () {
         totalBill += parseCurrencyToFloat($(this).text()) || 0;
@@ -178,63 +168,14 @@ function sum() {
     const parentSkeleton = $('div.skeleton').parent();
     parentSkeleton.text('-');
 }
-
-function buildPlan(pval) {
-    $('#table-plan tbody tr td.data').html('<div class="skeleton"></div>');
-
-    if (!pval) return;
-    /*
-     * pid - id do plano.
-     * vid - id do valor do plano.
-     */
-    const [pid, vid] = (pval).split('.');
-    const planData = plansData.find(planoServico => planoServico.id == pid);//Extrai o plano de serviço
-    const valData = planData.valor_plano_servico.find(planoServicoValor => planoServicoValor.id == vid);//Extrai o valor do plano de serviço
-
-    $('#table-plan tbody tr:nth-child(1) td:nth-child(3)').text(currencyFormat(valData.valor));
-    $('#table-plan tbody tr:nth-child(1) td:nth-child(5)').text(currencyFormat(valData.valor));
-
-    $('#table-plan tbody tr:nth-child(2) td:nth-child(4)').text($('#partners-container [name="pro_labore"][value="1"]:checked').length);
-
-    $('#table-plan tbody tr:nth-child(3) td:nth-child(4)').text($('#total_funcionarios').val());
-
-    planData.plano.forEach((item) => {
-        if (item.servico.valor != null) {
-            const condition = item.servico.valor.condicoes;
-            const serviceVal = item.servico.valor.valor;
-            if (item.servico.nome == 'Pró-labore dos sócios') {
-                const totalPartner = $('#partners-container .accordion [name="pro_labore"][value="1"]:checked').length;
-                let totalProLabore = 0;
-                if (condition[0] == 'gt' && totalPartner > condition[1]) {
-                    totalProLabore = parseInt((totalPartner - condition[1]) * serviceVal);
-                }
-                $('#table-plan tbody tr:nth-child(2) td:nth-child(2)').text(item.observacao);
-                $('#table-plan tbody tr:nth-child(2) td:nth-child(3)').text(currencyFormat(serviceVal));
-                $('#table-plan tbody tr:nth-child(2) td:nth-child(4)').text(totalPartner);
-                $('#table-plan tbody tr:nth-child(2) td:nth-child(5)').text(currencyFormat(totalProLabore));
-            }
-            else if (item.servico.nome == 'Folha de pagamento') {
-                const totalFunc = $('#total_funcionarios').val();
-                let totalFolha = 0;
-                if (condition[0] == 'gt' && totalFunc > condition[1]) {
-                    totalFolha = parseInt((totalFunc - condition[1]) * serviceVal);
-                }
-                $('#table-plan tbody tr:nth-child(3) td:nth-child(2)').text(item.observacao);
-                $('#table-plan tbody tr:nth-child(3) td:nth-child(3)').text(currencyFormat(serviceVal));
-                $('#table-plan tbody tr:nth-child(3) td:nth-child(4)').text(totalFunc);
-                $('#table-plan tbody tr:nth-child(3) td:nth-child(5)').text(currencyFormat(totalFolha));
-            }
-            else if (item.servico.nome == 'Faixa de faturamento') {
-                loadAdicionalFaixasFaturamento();
-            }
-        }
-    });
-}
-
+/**
+ * Salva o plano de serviço
+ * @returns void
+ */
 export function savePlan() {
     removeInvalidFeedback('#form-plan');
     const id = $('#form-plan [name="id"]').val();//Id do plano salvo
-    const pid = $('#form-plan [name="plano_id"]').val();//Id do plano de serviço + id do valor
+    const pid = $('#form-plan [name="plano_id"]').val();//Id do plano de serviço
     const eid = $('#form-company [name="id"]').val();//Id da empresa
     // Verfica se o plano de serviço foi selecionado
     if (pid == '') {
@@ -284,7 +225,10 @@ export function savePlan() {
         });
     });
 }
-
+/**
+ * Valida o formulario
+ * @returns boolean
+ */
 export function checkPlanForm(){
     if(!$('#form-plan [name="plano_id"]').val()){
         Swal.fire({
@@ -314,10 +258,30 @@ export function checkPlanForm(){
     };
     return true;
 }
-
+/**
+ * Verifica de o formulario foi alterado
+ * @returns boolean
+ */
 export function hasChanged(){
-    if(`${planData.plano.id}.${planData.plano.valor_plano_servico_id}` != $('#form-plan [name="plano_id"]').val()){
+    if(planData.plano.id != $('#form-plan [name="plano_id"]').val()){
         return true;
     }
+
+    if(planData.plano.total_socios != $('#form-plan [name="id"]').length){
+        return true;
+    }
+
+    if(planData.plano.total_folha_pagamento != $('#form-company [name="total_funcionarios"]').val()){
+        return true;
+    }
+
+    if(planData.plano.faixa_faturamento_id != $('#form-company [name="faixa_faturamento_id"]').val()){
+        return true;
+    }
+
+    if(planData.plano.regime_tributario_id != $('#form-company [name="regime_tributario_id"]').val()){
+        return true;
+    }
+
     return false;
 }

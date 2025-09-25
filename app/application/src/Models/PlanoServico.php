@@ -5,8 +5,8 @@ namespace App\Application\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Application\Models\PlanoServicoCategoria;
-use App\Application\Models\PlanoServicoValor;
+use App\Application\Models\PlanoCategoriaServico;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PlanoServico extends Model
 {
@@ -29,43 +29,33 @@ class PlanoServico extends Model
         'licensed_id',
     ];
     /**
-     * Relacionamento com a tabela plano_servico_categoria.
-     * Representa o plano de servico e suas categorias com seus servicos
+     * Relacionamento com a tabela plano_servico_faixa_faturamento
+     * A faixa de faturamento determina o preço do plano
      */
-    public function plano(): HasMany
+    public function planoServicoFaixasFaturamento(): HasMany
     {
-        return $this->hasMany(PlanoServicoCategoria::class, 'plano_servico_id', 'id');
-    }
-
-    public function valorPlanoServico(): HasMany
-    {
-        return $this->hasMany(PlanoServicoValor::class, 'plano_servico_id', 'id');
-    }
-
-    public function faixasFaturamento(): HasMany
-    {
-        return $this->hasMany(PlanoServicoFaixaFaturamento::class, 'plano_servico_id', 'id');
+        return $this->hasMany(PlanoServicoFaixaFaturamento::class);
     }
     /**
-     * Relacionamento com as tabelas categoria e servico
+     * Lista os serviços de um plano tendo como base atabela de
+     * relacionamento
      */
-    public function servico(): HasMany
+    public function servicos(): HasMany
     {
-        return $this->hasMany(PlanoServicoCategoria::class, 'plano_servico_id', 'id');
+        return $this->hasMany(PlanoCategoriaServico::class)->with('servico:id,nome');
     }
-
-    public function servicos()
+    /**
+     * 
+     */
+    public function listaServicos(): BelongsToMany
     {
-        return $this->hasManyThrough(Servico::class, PlanoServicoCategoria::class, 'plano_servico_id', 'id', 'id', 'servico_id');
+        return $this->BelongsToMany(Servico::class, PlanoCategoriaServico::class);
     }
-
-    public function valoresServicos()
+    /**
+     * Lista as categorias de um plano
+     */
+    public function categoriasPlano(): BelongsToMany
     {
-        return $this->hasMany(ServicoValor::class, 'plano_servico_id');
-    }
-
-    public function categorias(): HasMany
-    {
-        return $this->hasMany(PlanoServicoCategoria::class, 'plano_servico_id', 'id');
+        return $this->belongsToMany(CategoriaServico::class, PlanoCategoriaServico::class);
     }
 }

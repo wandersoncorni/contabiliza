@@ -5,6 +5,7 @@ namespace App\Application\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PlanoServicoFaixaFaturamento extends Model
@@ -23,20 +24,22 @@ class PlanoServicoFaixaFaturamento extends Model
     ];
 
     protected $hidden = [
+        'plano_servico_id',
         'created_at',
+        'ativo',
     ];
 
     protected $casts = [
         'valor' => 'float',
     ];
 
-    public function faixaFaturamento(): BelongsTo
-    {
-        return $this->belongsTo(FaixaFaturamento::class, 'faixa_faturamento_id');
-    }
-
     public function plano(): BelongsTo
     {
         return $this->belongsTo(PlanoServico::class, 'plano_servico_id');
+    }
+
+    public function valoresFaixasFaturamento(): BelongsTo
+    {
+        return $this->belongsTo(PlanoServico::class, 'id', 'plano_servico_id');
     }
 }

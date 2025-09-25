@@ -6,7 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Application\Models\Servico as ServicoModel;
-use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoCategoriaServico;
 /**
  * Class Cliente para gerenciar os dados do cliente
  * O cliente eh a pessoa que se cadastrou pela pagina de cadastro da area publica da aplicacao.
@@ -44,7 +44,7 @@ class Servico
     {
         try{
             $lid = $this->licenseId;
-            PlanoServicoCategoria::where('plano_servico_id', $pid)
+            PlanoCategoriaServico::where('plano_servico_id', $pid)
             ->where('categoria_servico_id', $cid)
             ->where('servico_id', $sid)
             ->whereIn('servico_id',function($query)use($sid, $lid){

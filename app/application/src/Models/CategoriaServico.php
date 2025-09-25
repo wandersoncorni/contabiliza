@@ -5,7 +5,7 @@ namespace App\Application\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Application\Models\Servico;
-use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoCategoriaServico;
 
 class CategoriaServico extends Model
 {
@@ -21,9 +21,13 @@ class CategoriaServico extends Model
         'licensed_id',
     ];
 
+    protected $hidden = [        
+        'pivot'
+    ];
+
     public function servicos()
     {
-        return $this->hasManyThrough(Servico::class, PlanoServicoCategoria::class);
+        return $this->hasManyThrough(Servico::class, PlanoCategoriaServico::class);
     }
 
     public function listarServicos()

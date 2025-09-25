@@ -12,42 +12,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Application\Models\Servico;
 use App\Application\Models\CategoriaServico;
 
-class PlanoServicoCategoria extends Model
+class PlanoCategoriaServico extends Model
 {
     use HasFactory;
 
     public const UPDATED_AT = null;
 
-    protected $table="plano_servico_categoria";
+    protected $table="plano_categoria_servico";
 
     protected $fillable = [
         'plano_servico_id',
         'categoria_servico_id',
         'servico_id',
-        'licensed_id'
+        'observacao',
+        'condicoes',
+        'valor',
     ];
 
     protected $hidden = [
-        'created_at'
+        'created_at',
     ];
 
-    public function plano(): BelongsTo
-    {
-        return $this->belongsTo(PlanoServico::class);
-    }
-
-    public function categoria(): BelongsTo
-    {
-        return $this->belongsTo(CategoriaServico::class, 'categoria_servico_id', 'id');
-    }
+    protected $casts = [
+        'condicoes' => 'array',
+    ];
 
     public function servico(): BelongsTo
     {
         return $this->belongsTo(Servico::class);
-    }
-
-    public function valorServico(): BelongsTo
-    {
-        return $this->belongsTo(ServicoValor::class, 'servico_id', 'servico_id');
     }
 }

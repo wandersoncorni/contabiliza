@@ -3,11 +3,12 @@
 namespace App\Application\Models;
 
 use App\Application\Models\Socio;
+use App\Application\Models\PlanoCategoriaServico;
 use Illuminate\Database\Eloquent\Model;
-use App\Application\Models\PlanoServicoCategoria;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Empresa extends Model
 {
@@ -58,14 +59,14 @@ class Empresa extends Model
 
     public function plano(): BelongsTo
     {
-        return $this->belongsTo(PlanoServicoCategoria::class)->where('ativo', true);
+        return $this->belongsTo(PlanoCategoriaServico::class)->where('ativo', true);
     }
     /**
      * Lista os socios de uma empresa
      */
-    public function socios()
+    public function socios(): HasMany
     {
-        return $this->belongsTo(Socio::class, 'empresa_id');
+        return $this->hasMany(Socio::class, 'empresa_id');
     }
     /**
      * Rotulos para status
@@ -99,6 +100,23 @@ class Empresa extends Model
 
     public function faixaFaturamento(): BelongsTo
     {
-        return $this->belongsTo(FaixaFaturamento::class);
+        return $this->belongsTo(FaixaFaturamento::class, 'faixa_faturamento_id');
+    }
+
+    public function cnae(): HasMany
+    {
+        return $this->HasMany(EmpresaCnae::class);
+    }
+
+    public function regimeTributario(): BelongsTo
+    {
+        return $this->belongsTo(RegimeTributario::class, 'regime_tributario_id');
+    }
+
+    public function prolabores(): HasMany
+    {
+        return $this->hasMany(Socio::class, 'empresa_id')
+        ->where('pro_labore', true)
+        ->where('deleted_at', null);
     }
 }

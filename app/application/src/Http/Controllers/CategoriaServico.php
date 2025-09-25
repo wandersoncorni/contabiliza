@@ -5,7 +5,7 @@ namespace App\Application\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Application\Models\CategoriaServico as CategoriaServicoModel;
-use App\Application\Models\PlanoServicoCategoria;
+use App\Application\Models\PlanoCategoriaServico;
 use Illuminate\Support\Facades\Log;
 
 class CategoriaServico
@@ -91,7 +91,7 @@ class CategoriaServico
     {
         try{
             $lid = $this->licenseId;
-            $req = PlanoServicoCategoria::where('plano_servico_id', $pid)->where('categoria_servico_id', $cid)
+            $req = PlanoCategoriaServico::where('plano_servico_id', $pid)->where('categoria_servico_id', $cid)
             ->whereIn('categoria_servico_id',function($query)use($cid, $lid){
                 $query->select('id')
                 ->from('categorias_servicos')

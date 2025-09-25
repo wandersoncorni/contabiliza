@@ -1,9 +1,10 @@
 {
-  "company.js": "/js/company.542745277fd42b9bbbc9.js",
+  "company.js": "/js/company.4b83f3df152ec32c45f6.js",
   "app.js": "/js/app.03260b01dcce2ea76994.js",
   "account.js": "/js/account.33078016c5e1e9f07c35.js",
   "clients.js": "/js/clients.33078016c5e1e9f07c35.js",
   "helpers.js": "/js/helpers.33078016c5e1e9f07c35.js",
   "users.js": "/js/users.33078016c5e1e9f07c35.js",
-  "agents.js": "/js/agents.81d5272ce66dac5dd352.js"
+  "agents.js": "/js/agents.81d5272ce66dac5dd352.js",
+  "financial.js": "/js/financial.efa6ccaaaf98db9e77a3.js"
 }

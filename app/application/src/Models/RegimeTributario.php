@@ -13,5 +13,5 @@ class RegimeTributario extends Model
 
     protected $table = 'regimes_tributarios';
 
-    protected $fillable = ['descricao'];
+    protected $fillable = ['id', 'descricao'];
 }

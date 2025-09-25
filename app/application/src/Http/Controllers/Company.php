@@ -4,6 +4,7 @@ namespace App\Application\Http\Controllers;
 
 use App\Application\Http\Requests\CompanyValidateRequest;
 use App\Application\Models\Empresa;
+use App\Application\Models\EmpresaCnae;
 use App\Application\Models\PlanoServicoContratado;
 use App\Application\Models\PlanoServico;
 use App\Application\Models\TiposPagamento;
@@ -11,12 +12,13 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class Company
 {
     public function list(): JsonResponse
     {
-        return response()->json(Empresa::all());
+        return response()->json(Empresa::with('cnae')->get());
     }
     /**
      * Metodo para criar uma empresa na aplicação. É uma empresa existente
@@ -28,8 +30,16 @@ class Company
 
         try {
             $data['id'] = null;
-            $company = Empresa::create($data);
-            return response()->json($company, 201);
+            $company = null;
+            DB::transaction(function () use ($data, &$company) {
+                $cnaeIds = $data['cnae_id'];
+                unset($data['cnae_id']);
+                $company = Empresa::create($data);
+                foreach ($cnaeIds as $cnaeId) {
+                    EmpresaCnae::create(['empresa_id' => $company->id, 'cnae_id' => $cnaeId]);
+                }
+            });
+            return response()->json(Empresa::where('id', $company->id)->with('cnae')->first(), 201);
         } catch (\Exception $e) {
             // Log the error message for debugging
             Log::channel('database')->error('Erro ao criar uma empresa.', [$e->getMessage()]);
@@ -45,8 +55,15 @@ class Company
     {
         $data = $request->all();
         try {
+            if(isset($data['cnae_id'])) {
+                EmpresaCnae::where('empresa_id', $data['id'])->delete();
+                foreach ($data['cnae_id'] as $cnaeId) {
+                    EmpresaCnae::create(['empresa_id' => $data['id'], 'cnae_id' => $cnaeId]);
+                }
+                unset($data['cnae_id']);
+            }
             Empresa::where('id', $data['id'])->update($data);
-            $company = Empresa::find($data['id']);
+            $company = Empresa::where('id', $data['id'])->with('cnae')->first();
             return response()->json($company, 200);
         } catch (\Exception $e) {
             // Log the error message for debugging
@@ -80,7 +97,7 @@ class Company
         $validation = Validator::make($request->all(), [
             'id' => "$idValidation|integer|exists:planos_servicos_contratados,id",
             'empresa_id' => 'required|integer|exists:empresas,id',
-            'plano_id' => 'required|regex:/^\d\.\d$/',
+            'plano_id' => 'required|exists:planos_servicos,id',
         ], [
             'empresa_id.required' => 'O identificador da empresa é obrigatório.',
             'plano_id.required' => 'Selecione um plano.',
@@ -92,86 +109,74 @@ class Company
         }
 
         $data = $request->all();
-        //Verifica se a empresa possui um plano em edição
+        /*
+         * Verifica se a empresa possui um plano em edição.
+         * Se houver, atualiza o plano de serviço.
+         */
         $data['id'] = PlanoServicoContratado::where('empresa_id', $data['empresa_id'])->whereNull('ativo')->first()['id'] ?? null;
         
         $data['client_id'] = session()->get('client_context') ?? auth()->user()->person->client_id;
-        /**
-         * @var int $pid - O id do plano
-         * @var int $vpid - O id do valor do plano
-         */
-        list($pid, $vpid) = explode('.', $data['plano_id']);
-
-        $plano = PlanoServico::find($pid);
-        $categorias = $plano->categorias()->get();
-        $empresa = Empresa::find($data['empresa_id']);
-        $socios = $empresa->socios()->where('client_id', $data['client_id'])->get();
         
-        $servicos = $plano->servicos()->get();
-
-        //Totaliza os pro_labore a serem pagos
-        $totalizarProlabpre = function ($socios) {
-            $pro_labore = 0;
-            foreach ($socios as $socio) {
-                $pro_labore += $socio->pro_labore;
-            }
-            return $pro_labore;
-        };
-        $totalProlabore = $totalizarProlabpre($socios);
+        $plano = PlanoServico::select('id', 'nome')
+        ->with('categoriasPlano:id,nome')
+        ->with('servicos')
+        ->find($data['plano_id']);
+        $empresa = Empresa::select('id', 'faixa_faturamento_id', 'regime_tributario_id', 'total_funcionarios')
+        ->with('faixaFaturamento:id,descricao')
+        ->with('regimeTributario:id,descricao')
+        ->withCount('socios:empresa_id')
+        ->withCount('prolabores:empresa_id')
+        ->find($data['empresa_id']);
 
         //Calcula o valor do prolabore conforme a condição
         $valorProlabore = 0;
-        $servicoProlabore = $plano->valoresServicos->where('servico_id', 9)->first();
+        $servicoProlabore = $plano->servicos->where('servico_id', 9)->first();
         if (!is_null($servicoProlabore)) {
-            list($condicao, $valorCondicao) = $servicoProlabore->condicoes;
-            if ($condicao == 'gt' && $totalProlabore > $valorCondicao) {
-                $valorProlabore = ($totalProlabore > $valorCondicao) * $servicoProlabore->valor;
+            list($condicao, $valorCondicao) = $servicoProlabore['condicoes'];
+            if ($condicao == 'gt' && $empresa['prolabores_count'] > $valorCondicao) {
+                $valorProlabore = ($empresa['prolabores_count'] > $valorCondicao) * $servicoProlabore['valor'];
             }
         }
 
         //Calcula o valor para folha de pagamento
         $valorServicoFolha = 0;
         $totalFolha = $empresa->total_funcionarios;
-        $servicoFolha = $plano->valoresServicos->where('servico_id', 10)->first();
+        $servicoFolha = $plano->servicos->where('servico_id', 10)->first();
         if (!is_null($servicoFolha)) {
-            list($condicao, $valorCondicao) = $servicoFolha->condicoes;
+            list($condicao, $valorCondicao) = $servicoFolha['condicoes'];
             if ($condicao == 'gt' && $totalFolha > $valorCondicao) {
-                $valorServicoFolha = ($totalFolha > $valorCondicao) * $servicoFolha->valor;
+                $valorServicoFolha = ($totalFolha > $valorCondicao) * $servicoFolha['valor'];
             }
         }
-
-        //Valor da faixa de faturamento
-        $valorAdicionalFaturamento = 0;
-        $adicionalFaixaFaturamento = $plano->faixasFaturamento()->where('faixa_faturamento_id', $empresa->faixa_faturamento_id)->first();
-        if (!is_null($adicionalFaixaFaturamento)) {
-            $valorAdicionalFaturamento = $adicionalFaixaFaturamento->valor;
-        }
-        $valorPlanoServico = $plano->valorPlanoServico()->where('id', $vpid)->first();
+        
+        $valorPlanoServico = $plano->planoServicoFaixasFaturamento
+        ->where('faixa_faturamento_id', $empresa->faixa_faturamento_id)
+        ->where('regime_tributario_id', $empresa->regime_tributario_id)
+        ->first()->valor;
+        
         $dadosPlano = [
             'id' => $data['id'],
             'empresa_id' => $data['empresa_id'],
             'client_id' => $data['client_id'],
             'plano' => [
-                'id' => $pid,
-                'valor' => $valorPlanoServico->valor,//Valor do plano
-                'valor_plano_servico_id' => $valorPlanoServico->id,//Periodicidade do plano
-                'pro_labore_obs' => $categorias->where('servico_id', 9)->first()['observacao'],//Observação do pro_labore
+                'id' => $plano->id,
+                'valor' => $valorPlanoServico,//Valor do plano
+                'pro_labore_obs' => $plano->servicos->where('servico_id', 9)->first()['observacao'],//Observação do pro_labore
                 'valor_unitario_pro_labore' => $servicoProlabore->valor,//Valor unitário do pro_labore
-                'total_socios' =>  $totalProlabore,//Total de sócios que receberão o pro_labore     
+                'total_socios' =>  $empresa['prolabores_count'],//Total de sócios que receberão o pro_labore     
                 'total_valor_prolabore' => $valorProlabore,//Total do serviço (valor do serviço * total de sócios)
-                'folha_pagamento_obs' => $categorias->where('servico_id', 10)->first()['observacao'],//Observação da folha de pagamento
+                'folha_pagamento_obs' => $plano->servicos->where('servico_id', 10)->first()['observacao'],//Observação da folha de pagamento
                 'valor_unitario_folha_pagamento' => $servicoFolha->valor,//Valor unitário da folha de pagamento
                 'total_folha_pagamento' => $empresa['total_funcionarios'],//Total de funcionarios da folha de pagamento
                 'valor_folha_pagamento' => $valorServicoFolha,//Total do serviço (valor do serviço * total de funcionarios da folha de pagamento)
                 'faixa_faturamento_id' => $empresa['faixa_faturamento_id'],//ID da faixa de faturamento,
-                'faixa_faturamento_obs' => $categorias->where('servico_id', 11)->first()['observacao'],//Observação da faixa de faturamento
-                'faixa_faturamento' => $empresa->faixaFaturamento()->first()['descricao'],//Faixa de faturamento
-                'valor_faixa_faturamento' => $valorAdicionalFaturamento
+                'regime_tributario_id' => $empresa['regime_tributario_id'],//ID do regime tributário
             ],
+            //Será preenchido na configuração do pagamento
             'pagamento' => [
                 'forma_pgto_id' => null,
                 'dia_cobranca' => null
-            ] //Será preenchido na configuração do pagamento
+            ]
         ];
         
         // Se o id do plano de serviço contratado for nulo será criado um novo

@@ -62,11 +62,11 @@ export function createPartnerForm() {
                             <div class="row mb-3">
                                 <div class="col-6 col-md-6">
                                     <label class="form-label">Estado Civil</label>
-                                    <select class="form-select estado-civil" name="estado_civil" required ></select>
+                                    <select class="form-select estado-civil" name="estado_civil_id" required ></select>
                                 </div>
                                 <div class="col-6 col-md-6">
                                 <label class="form-label">Regime de Bens</label>
-                                    <select class="form-select" name="regime_bens" id="regimes_bens" disabled >
+                                    <select class="form-select" name="regime_bens_id" id="regimes_bens" disabled >
                                 </select>
                                 </div>
                             </div>
@@ -152,12 +152,12 @@ export function createPartnerForm() {
 
     helpers.listStates(`#${formId} [name="estado"]`);
 
-    $(document).on('change', `#${formId} [name="estado_civil"]`, function () {
+    $(document).on('change', `#${formId} [name="estado_civil_id"]`, function () {
         if (this.value == 2) {
-            $(`#${formId} [name="regime_bens"]`).prop('disabled', false);
+            $(`#${formId} [name="regime_bens_id"]`).prop('disabled', false);
             return;
         }
-        $(`#${formId} [name="regime_bens"]`).prop('disabled', true).val('');
+        $(`#${formId} [name="regime_bens_id"]`).prop('disabled', true).val('');
     });
 
     setupFormPartner(formId);
@@ -182,7 +182,7 @@ let listaRegimesBens = [];
  * @param {number} pid - The ID of the partner being added.
  */
 async function listarRegimeBens(formId) {
-    const field = $(`#${formId} [name="regime_bens"]`);
+    const field = $(`#${formId} [name="regime_bens_id"]`);
     if (listaRegimesBens.length == 0) {
         const response = await fetch('/api/v1/regime-bens', { method: 'GET' });
         const regimesBens = await response.json();
@@ -196,13 +196,13 @@ async function listarRegimeBens(formId) {
 
 let listaEstadosCivis = [];
 async function listarEstadosCivis(formId) {
-    const field = $(`#${formId} [name="estado_civil"]`);
+    const field = $(`#${formId} [name="estado_civil_id"]`);
     if (listaEstadosCivis.length == 0) {
         const response = await fetch('/api/v1/auxiliares/listar-estado-civil');
         listaEstadosCivis = await response.json();
     }
     field.html(`<option value="">Selecione uma opção</option>`);
     listaEstadosCivis.forEach(estadoCivil => {
-        field.append(`<option value="${estadoCivil.id}">${estadoCivil.descricao}</option>`);
+        field.append(`<option value="${estadoCivil.id}">${estadoCivil.nome}</option>`);
     });
 }

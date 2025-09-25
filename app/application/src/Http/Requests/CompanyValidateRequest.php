@@ -45,7 +45,7 @@ class CompanyValidateRequest extends FormRequest
         $mutable = [
             'area_atividade_id'    => ['integer', 'gt:0', 'exists:areas_atividade,id'],
             'bairro'               => ['string', 'max:255'],
-            'capital_social'       => ['decimal:2', 'min:0'],
+            'capital_social'       => ['decimal:0,2', 'min:0'],
             'cep'                  => ['string', 'max:255'],
             'client_id'            => ['integer', 'gt:0', 'exists:people,id'],
             'cnae_id'              => ['array'],
