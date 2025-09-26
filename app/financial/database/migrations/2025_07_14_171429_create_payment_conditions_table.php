@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('payment_conditions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->foreignId('installment_interval_id')->constrained('installment_intervals')->onDelete('restrict');
             $table->string('description', 100); // Ex.: "À vista", "Parcelado em 3x", "Cartão de crédito", "Boleto bancário"
             $table->string('payment_type', 20); // Ex.: "dinheiro", "cartao", "boleto", "pix"

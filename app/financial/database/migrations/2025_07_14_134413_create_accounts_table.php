@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');  
             $table->foreignId('company_id')->constrained('empresas')->onDelete('restrict');
             $table->string('bank_name', 100);
             $table->string('bank_code', 10);

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->foreignId('company_id')->constrained('empresas')->onDelete('restrict');
             $table->foreignId('chart_of_account_id')->constrained()->onDelete('restrict');
             $table->foreignId('person_id')->nullable()->constrained('people_company')->onDelete('set null');

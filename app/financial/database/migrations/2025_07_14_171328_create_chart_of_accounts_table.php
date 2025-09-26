@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('chart_of_accounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->string('code', 20)->unique(); // Ex.: "1.1.01"
             $table->string('name', 100);
             $table->string('type', 20); // Ex.: "asset", "liability", "revenue", "expense"

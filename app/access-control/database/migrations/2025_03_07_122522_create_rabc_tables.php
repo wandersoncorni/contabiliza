@@ -37,15 +37,15 @@ return new class extends Migration
             $table->timestamp('deleted_at')->nullable();
         });
 
-        Schema::create('users_roles', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->unsignedBigInteger('role_id');
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
-            $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
-        });
+        // Schema::create('users_roles', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->unsignedBigInteger('user_id');
+        //     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        //     $table->unsignedBigInteger('role_id');
+        //     $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+        //     $table->timestamps();
+        //     $table->timestamp('deleted_at')->nullable();
+        // });
 
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
