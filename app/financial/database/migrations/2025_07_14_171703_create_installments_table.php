@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('installments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->foreignId('transaction_id')->constrained('transactions')->onDelete('cascade');
             $table->integer('installment_number'); // Ex.: 1, 2, 3, etc.
             $table->decimal('amount', 15, 2); // Valor da parcela

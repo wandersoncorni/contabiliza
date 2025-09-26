@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('people_company', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->foreignId('company_id')->constrained('empresas')->onDelete('restrict'); // Relaciona com empresas
             $table->string('name', 100);
             $table->string('tax_id', 20)->nullable(); // CPF ou CNPJ

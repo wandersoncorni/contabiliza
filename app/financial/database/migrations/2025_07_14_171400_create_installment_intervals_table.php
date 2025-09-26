@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('installment_intervals', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->integer('installment'); // Número de parcelas
             $table->integer('interval'); // Intervalo em dias entre parcelas
             $table->decimal('percentage', 5, 2); // Percentual de cada parcela

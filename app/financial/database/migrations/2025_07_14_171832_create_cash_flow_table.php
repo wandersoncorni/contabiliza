@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('cash_flow', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('licensed_id')->constrained('licensed')->onDelete('restrict');
             $table->foreignId('company_id')->constrained('empresas')->onDelete('restrict');
             $table->foreignId('chart_of_account_id')->constrained('chart_of_accounts')->onDelete('restrict');
             $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('set null');
